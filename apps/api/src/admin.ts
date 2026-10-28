@@ -12,9 +12,8 @@ export function sameToken(a: string, b: string): boolean {
   return diff === 0;
 }
 
-/** 통과면 null, 막으면 돌려줄 응답 */
-export function adminGuard(c: Context<{ Bindings: Env }>): Response | null {
-  const token = c.env.ADMIN_TOKEN;
+/** 통과면 null, 막으면 돌려줄 응답 — 토큰이 설정 안 됐으면 경로가 없는 것처럼(404) */
+export function tokenGuard(c: Context<{ Bindings: Env }>, token: string | undefined): Response | null {
   if (!token) return c.notFound() as Response;
   if (!sameToken(c.req.header("authorization") ?? "", `Bearer ${token}`)) {
     const body: ApiError = { error: "인증 실패" };
@@ -22,3 +21,5 @@ export function adminGuard(c: Context<{ Bindings: Env }>): Response | null {
   }
   return null;
 }
+
+export const adminGuard = (c: Context<{ Bindings: Env }>) => tokenGuard(c, c.env.ADMIN_TOKEN);

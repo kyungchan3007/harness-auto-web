@@ -41,3 +41,14 @@ export const fetchRuns = sqliteTable("fetch_runs", {
   rows: integer("rows").notNull().default(0),
   message: text("message"),
 });
+
+/** 실시간 작업 기록 — 공개 (에이전트 훅이 보냄 · 최근 ACTIVITY_KEEP 개만 남김) · 명령 · 경로 · 내용은 저장하지 않음 */
+export const activityEvents = sqliteTable("activity_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  at: text("at").notNull(),
+  kind: text("kind").notNull(), // @hav/shared/activity ACTIVITY_KINDS
+  label: text("label").notNull(), // 고정된 한국어 문장
+  file: text("file"), // 파일 이름만
+  ok: integer("ok", { mode: "boolean" }),
+  task: text("task"), // NNNN
+});

@@ -7,6 +7,7 @@ import { outOfPlan, removedAssertions } from "./scope-check.mjs";
 import { emptyTemplate } from "./spec-check.mjs";
 import { decide, isOutside, writeTargets } from "./outside-guard.mjs";
 import { englishReason, lastTurnTexts } from "./korean-gate.mjs";
+import { classifyBash, resultOf, safeFile, toActivity } from "./activity.mjs";
 
 test("glob: ** · * · 폴더", () => {
   assert.ok(globToRegExp("src/cart/**").test("src/cart/a/b.ts"));
@@ -131,4 +132,41 @@ test("한국어 게이트: 마지막 사람 메시지 뒤 에이전트 글만 (�
     line({ type: "assistant", message: { content: [{ type: "text", text: "Done with the check." }] } }),
   ].join("\n");
   assert.deepEqual(lastTurnTexts(jsonl), ["확인하겠습니다.", "Done with the check."]);
+});
+
+test("실시간 기록: 명령 · 경로 · 내용은 안 나가고 종류 · 고정 문장 · 파일 이름만", () => {
+  const root = "/repo";
+  const post = (tool_name, tool_input, tool_response) => toActivity({ hook_event_name: "PostToolUse", tool_name, tool_input, tool_response }, root, "0046");
+  const edit = post("Edit", { file_path: "/repo/apps/api/src/store.ts", old_string: "비밀 내용", new_string: "x" });
+  assert.deepEqual(edit, { kind: "edit", label: "코드 수정", file: "store.ts", ok: null, task: "0046" });
+  const bash = post("Bash", { command: "curl -H 'authorization: Bearer abc' https://x" }, { stdout: "ghp_secretsecretsecret" });
+  assert.deepEqual(bash, { kind: "run", label: "API 확인", file: null, ok: null, task: "0046" });
+  assert.ok(!JSON.stringify(bash).includes("Bearer") && !JSON.stringify(bash).includes("ghp_"));
+});
+
+test("실시간 기록: 비밀 파일 이름은 버림", () => {
+  for (const p of ["/repo/.env", "/repo/apps/api/.dev.vars", "/repo/.env.local", "/repo/0123456789abcdef0123456789abcdef.txt", "/repo/a b.ts"]) assert.equal(safeFile(p), null, p);
+  assert.equal(safeFile("/repo/page.test.tsx"), "page.test.tsx");
+});
+
+test("실시간 기록: 명령 분류 · 통과/실패", () => {
+  assert.equal(classifyBash("ALLOW_PROTECTED=1 bash .agents/checks.sh > .tmp/gate.log").kind, "gate");
+  assert.equal(classifyBash("cd apps/api && npx vitest run").kind, "test");
+  assert.equal(classifyBash("git commit -F -").kind, "commit");
+  assert.equal(classifyBash("gh pr create --label x").label, "PR 만듦");
+  assert.equal(classifyBash("npm i three").kind, "install");
+  assert.equal(classifyBash("grep -n x src").kind, "search");
+  assert.equal(classifyBash("python3 x.py").label, "명령 실행");
+  assert.equal(resultOf("gate", " 결과: ✅ ALL PASS (quick)"), true);
+  assert.equal(resultOf("gate", "  ❌ FAIL — 테스트"), false);
+  assert.equal(resultOf("test", "Tests  52 passed (52)"), true);
+  assert.equal(resultOf("test", "Tests  1 failed | 51 passed"), false);
+  assert.equal(resultOf("run", "passed"), null);
+});
+
+test("실시간 기록: 하네스가 막을 쓰기는 실행 전에 🛑 · 그 밖의 실행 전 · 잡음 도구는 안 보냄", () => {
+  const pre = (tool_name, tool_input) => toActivity({ hook_event_name: "PreToolUse", tool_name, tool_input }, "/repo", null);
+  assert.equal(pre("Write", { file_path: "/etc/x" })?.kind, "blocked");
+  assert.equal(pre("Write", { file_path: "/repo/a.ts" }), null);
+  assert.equal(toActivity({ hook_event_name: "PostToolUse", tool_name: "mcp__ccd_turn__update_plan", tool_input: {} }, "/repo"), null);
 });

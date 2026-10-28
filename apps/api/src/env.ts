@@ -5,4 +5,6 @@ export type Env = {
   KOREAEXIM_KEY?: string;
   /** 관리용 수집 API(POST /fx/collect) 토큰 — 없으면 그 경로는 꺼짐 */
   ADMIN_TOKEN?: string;
+  /** 실시간 작업 기록(POST /activity) 토큰 — 에이전트 훅만 씀 · 없으면 그 경로는 꺼짐 */
+  ACTIVITY_TOKEN?: string;
 };
