@@ -5,12 +5,19 @@ import { z } from "zod";
 export const REPO = "kyungchan3007/harness-auto-web";
 export const REPO_URL = `https://github.com/${REPO}`;
 const GITHUB = "https://api.github.com";
-// GitHub 은 User-Agent 를 요구 · Pages 빌드에서 10초 안에 못 받은 적이 있어 20초 + 한 번 더
-const OPTS = { base: GITHUB, timeoutMs: 20_000, headers: { "user-agent": "tripfx-build", accept: "application/vnd.github+json" } };
+// GitHub 은 User-Agent 를 요구 · 20초 + 한 번 더
+// Pages 빌드 서버는 IP 를 여럿이 같이 써서 인증 없이 부르면 시간당 60번 제한에 걸림(403) → 빌드 환경 변수 GITHUB_TOKEN (읽기 전용) 이 있으면 씀
+// 빌드 때 서버에서만 부르므로 토큰은 화면(HTML · JS)에 들어가지 않음
+const headers = (token = process.env.GITHUB_TOKEN) => ({
+  "user-agent": "tripfx-build",
+  accept: "application/vnd.github+json",
+  ...(token ? { authorization: `Bearer ${token}` } : {}),
+});
 
 async function getGithub<T extends z.ZodType>(path: string, schema: T, fetcher?: typeof fetch) {
-  const first = await getJson(path, schema, { ...OPTS, fetcher });
-  return first.ok ? first : getJson(path, schema, { ...OPTS, fetcher });
+  const opts = { base: GITHUB, timeoutMs: 20_000, headers: headers(), fetcher };
+  const first = await getJson(path, schema, opts);
+  return first.ok ? first : getJson(path, schema, opts);
 }
 
 /** "[0046] 실시간 작업 기록 …" → { task: "0046", name: "실시간 작업 기록 …" } */
