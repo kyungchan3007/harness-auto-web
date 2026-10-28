@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko">
-      <body>{children}</body>
+    <html lang="ko" data-surface="dark">
+      <body className="bg-surface text-fg">{children}</body>
     </html>
   );
 }

@@ -1,0 +1,4 @@
+{
+  "extends": "@hav/config/tsconfig/base.json",
+  "include": ["src"]
+}
