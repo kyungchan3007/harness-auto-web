@@ -10,8 +10,8 @@ import { Tabs } from "@hav/ui/tabs";
 import { SOURCE_NAME, headline, percentileText, rateText } from "./copy";
 import { currencyName, groupByRegion } from "./currencies";
 import { Flag } from "./flag";
-import { GlobeLazy } from "../globe/globe-lazy";
-import { DESTINATIONS } from "../globe/geo";
+import { GlobeLazy } from "@/shared/three-lazy";
+import { DESTINATIONS, SEOUL } from "./places";
 import { CountUp } from "@hav/ui/count-up";
 import { Reveal } from "@hav/ui/reveal";
 
@@ -55,7 +55,8 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
           {/* 🌏 호 색 = 그 나라 통화 신호 · 3D 가 안 되면 이 칸만 빔 (글자는 그대로) */}
           <GlobeLazy
             className="h-[320px] w-full sm:h-[420px] lg:h-[520px]"
-            arcs={DESTINATIONS.map((d) => ({ currency: d.currency ?? "", signal: bySignal.get(d.currency ?? "")?.signal ?? null }))}
+            origin={SEOUL}
+            arcs={DESTINATIONS.map((d) => ({ to: d, tone: bySignal.get(d.currency ?? "")?.signal ?? null }))}
           />
         </div>
       </Section>

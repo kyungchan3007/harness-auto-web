@@ -1,23 +1,16 @@
 "use client";
 
-// 🌏 지구본 — 어두운 구 · 위경도선 · 오로라 테두리 빛 · 서울 → 여행지 호 (색 = 그 통화 신호) · 천천히 회전
-import type { Signal } from "@hav/shared/signal";
+// 🌏 지구본 — 어두운 구 · 위경도선 · 오로라 테두리 빛 · 출발지 → 도착지 호 (색 = 받은 tone) · 출발지 주변에서 천천히 오감
+// 어디를 그릴지 · 무슨 색인지는 쓰는 쪽이 정함 (디자인 시스템은 사이트 데이터를 모름)
 import { Line } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useInView, useReducedMotion } from "motion/react";
-import { useMemo, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
 import { AdditiveBlending, BackSide, type Group, type Mesh } from "three";
-import { DESTINATIONS, SEOUL, type Vec3, arcPoints, faceRotationY, toVec3 } from "./geo";
+import { type Place, type Vec3, arcPoints, faceRotationY, toVec3 } from "./geo";
+import { Stage, type Tone, tokenColor, toneColor } from "./stage";
 
-export type ArcSignal = { currency: string; signal: Signal | null };
-
-/** 색의 원본은 packages/ui/src/tokens.css — 화면에서 CSS 변수로 읽고, 못 읽으면 같은 값 */
-function tokenColor(name: string, fallback: string): string {
-  if (typeof window === "undefined") return fallback;
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
-}
-const signalColor = (s: Signal | null) =>
-  s === "cheap" ? tokenColor("--hav-cheap", "#4c9bff") : s === "expensive" ? tokenColor("--hav-expensive", "#ff5a5f") : tokenColor("--hav-normal", "#c7c7cc");
+export type GlobeArc = { to: Place; tone: Tone | null };
+export type GlobeProps = { origin: Place; arcs: GlobeArc[]; className?: string };
 
 /** 테두리가 빛나는 대기 — 카메라를 향한 면일수록 투명 (fresnel) · 오로라 청록 → 보라 */
 const atmosphere = {
@@ -44,8 +37,8 @@ function Graticule() {
   return lines.map((pts, i) => <Line key={i} points={pts} color="#3a3f4b" lineWidth={0.6} transparent opacity={0.55} />);
 }
 
-function Arc({ to, color, animate, offset }: { to: (typeof DESTINATIONS)[number]; color: string; animate: boolean; offset: number }) {
-  const pts = useMemo(() => arcPoints(SEOUL, to, { segments: 96, lift: 0.28 }), [to]);
+function Arc({ from, to, color, animate, offset }: { from: Place; to: Place; color: string; animate: boolean; offset: number }) {
+  const pts = useMemo(() => arcPoints(from, to, { segments: 96, lift: 0.28 }), [from, to]);
   const spark = useRef<Mesh>(null);
   useFrame(({ clock }) => {
     if (!spark.current) return;
@@ -69,16 +62,15 @@ function Arc({ to, color, animate, offset }: { to: (typeof DESTINATIONS)[number]
   );
 }
 
-function Earth({ arcs, animate }: { arcs: ArcSignal[]; animate: boolean }) {
+function Earth({ origin, arcs, animate }: { origin: Place; arcs: GlobeArc[]; animate: boolean }) {
   const spin = useRef<Group>(null);
-  const bySignal = useMemo(() => new Map(arcs.map((a) => [a.currency, a.signal])), [arcs]);
   // 한국 주변에서만 천천히 오감 (사용자 확인: "한국 주변에서만 오가게 해줘") — 서울이 가장자리로 밀리지 않게 ±0.35 rad · 한 번 오가는 데 약 21초
   //   ±0.55 로는 끝에서 서울이 테두리까지 가서 호가 거의 숨는 것을 화면에서 봄
-  const base = faceRotationY(SEOUL) - 0.3;
+  const base = faceRotationY(origin) - 0.3;
   useFrame(({ clock }) => {
     if (animate && spin.current) spin.current.rotation.y = base + Math.sin(clock.elapsedTime * 0.3) * 0.35;
   });
-  const seoul = toVec3(SEOUL.lat, SEOUL.lng, 1.005);
+  const seoul = toVec3(origin.lat, origin.lng, 1.005);
   return (
     // 기울기 · 처음에 서울이 앞을 보게
     <group rotation={[0.35, 0, 0]}>
@@ -92,9 +84,9 @@ function Earth({ arcs, animate }: { arcs: ArcSignal[]; animate: boolean }) {
           <sphereGeometry args={[0.02, 16, 16]} />
           <meshBasicMaterial color={tokenColor("--hav-accent", "#4ff0e0")} />
         </mesh>
-        {DESTINATIONS.map((d, i) => (
+        {arcs.map((a, i) => (
           // 빛이 한꺼번에 출발하지 않게 호마다 시작점을 어긋나게
-          <Arc key={d.id} to={d} offset={i / DESTINATIONS.length} color={signalColor(bySignal.get(d.currency ?? "") ?? null)} animate={animate} />
+          <Arc key={a.to.id} from={origin} to={a.to} offset={i / arcs.length} color={toneColor(a.tone)} animate={animate} />
         ))}
       </group>
       <mesh scale={1.18}>
@@ -105,35 +97,10 @@ function Earth({ arcs, animate }: { arcs: ArcSignal[]; animate: boolean }) {
   );
 }
 
-/** WebGL 을 쓸 수 있는지 — 못 쓰면 지구본만 빠진다 (글자는 그대로) */
-function canUseWebGL(): boolean {
-  try {
-    const c = document.createElement("canvas");
-    return Boolean(c.getContext("webgl2") ?? c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
-
-export default function Globe({ arcs, className = "" }: { arcs: ArcSignal[]; className?: string }) {
-  const box = useRef<HTMLDivElement>(null);
-  const inView = useInView(box, { margin: "200px" });
-  const reduce = useReducedMotion();
-  const [webgl] = useState(canUseWebGL);
-  const animate = !reduce;
+export default function Globe({ origin, arcs, className = "" }: GlobeProps) {
   return (
-    <div ref={box} className={className} aria-hidden>
-      {webgl && (
-        <Canvas
-          camera={{ position: [0, 0, 4.2], fov: 42 }}
-          dpr={[1, 2]}
-          gl={{ antialias: true, alpha: true }}
-          // 화면 밖이면 그리지 않음 · 움직임 줄이기면 한 번만 그림
-          frameloop={!inView ? "never" : animate ? "always" : "demand"}
-        >
-          <Earth arcs={arcs} animate={animate} />
-        </Canvas>
-      )}
-    </div>
+    <Stage className={className} camera={{ position: [0, 0, 4.2], fov: 42 }}>
+      {(animate) => <Earth origin={origin} arcs={arcs} animate={animate} />}
+    </Stage>
   );
 }
