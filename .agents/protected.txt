@@ -17,10 +17,13 @@ yarn.lock
 
 # 배포 · 빌드 설정
 **/wrangler.toml
+**/wrangler.json
+**/wrangler.jsonc
 **/next.config.*
 **/.env*
 turbo.json
 packages/config/**
 
-# 데이터 형식 계약 (화면과 수집 스크립트가 함께 의존)
-src/data/schema.*
+# 데이터 계약 — DB 스키마 · 이미 만든 마이그레이션 (고치지 말고 새 마이그레이션을 만든다)
+apps/api/src/db/schema.ts
+apps/api/drizzle/migrations/**
