@@ -9,8 +9,8 @@
     {
       "binding": "DB",
       "database_name": "hav-db",
-      // 실제 id 는 사람이 `wrangler d1 create hav-db` 로 만든 뒤 넣는다 — 로컬 개발은 이 값 그대로 동작
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // 사용자가 `wrangler d1 create hav-db` 로 만든 실제 DB (2026-10-28) — 비밀값 아님 · 로컬 개발은 --local 로 따로
+      "database_id": "eccde06e-211e-4eb0-95e5-c0c30f8ad278",
       "migrations_dir": "drizzle/migrations"
     }
   ],
