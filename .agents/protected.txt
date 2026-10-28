@@ -21,6 +21,7 @@ yarn.lock
 **/wrangler.jsonc
 **/next.config.*
 **/.env*
+**/.dev.vars
 turbo.json
 packages/config/**
 
