@@ -1,9 +1,9 @@
 // 홈 — 빌드 때 받은 데이터로 그림 · 첫 화면(지구본) + 통화 전체를 지역별 탭으로
 import type { Fetched } from "@/shared/api";
+import { SiteNav } from "@/shared/site-nav";
 import type { FxLatest } from "@hav/shared/fx";
 import type { SignalList } from "@hav/shared/signal";
 import { Card } from "@hav/ui/card";
-import { NavBar } from "@hav/ui/nav-bar";
 import { Section } from "@hav/ui/section";
 import { SignalBadge } from "@hav/ui/signal-badge";
 import { Tabs } from "@hav/ui/tabs";
@@ -12,11 +12,10 @@ import { currencyName, groupByRegion } from "./currencies";
 import { Flag } from "./flag";
 import { GlobeLazy } from "../globe/globe-lazy";
 import { DESTINATIONS } from "../globe/geo";
-import { CountUp } from "./count-up";
-import { Reveal } from "./reveal";
+import { CountUp } from "@hav/ui/count-up";
+import { Reveal } from "@hav/ui/reveal";
 
 const HERO = "USD";
-const REPO = "https://github.com/kyungchan3007/harness-auto-web";
 
 export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: Fetched<SignalList> }) {
   const rates = latest.ok ? latest.data.rates : [];
@@ -29,21 +28,7 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
 
   return (
     <>
-      <NavBar
-        title="Tripfx"
-        // eslint-disable-next-line @next/next/no-img-element -- 정적 내보내기 · 작은 로고 하나
-        logo={<img src="/icon.svg" alt="" width={24} height={24} className="size-6" />}
-        links={[
-          { href: "#today", label: "오늘 환율" },
-          { href: "#currencies", label: "통화" },
-          { href: REPO, label: "만드는 중" },
-        ]}
-        action={
-          <a href="#currencies" className="inline-flex rounded-pill bg-accent px-4 py-1.5 text-xs font-semibold text-on-accent">
-            통화 보기
-          </a>
-        }
-      />
+      <SiteNav page="home" />
 
       <Section id="today">
         <div className="grid items-center gap-6 lg:grid-cols-[1.05fr_1fr]">
@@ -122,7 +107,7 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
           <p>신호는 최근 {windowDays}일 중 오늘 값의 위치입니다. 앞으로를 예측하지 않으며, 투자 · 금융 조언이 아닙니다.</p>
           <p>
             환율: 한국수출입은행 (예비: Frankfurter) · 화면에 보이는 값은 사이트를 만든 시점의 자료입니다 ·{" "}
-            <a href={REPO} className="text-accent hover:underline">
+            <a href="/log" className="text-accent hover:underline">
               🚧 이 사이트는 AI 코딩 에이전트가 만들고 있습니다
             </a>
           </p>
