@@ -18,3 +18,14 @@ describe("GET /health", () => {
     expect(await res.json()).toMatchObject({ ok: false, db: false });
   });
 });
+
+describe("Cron 설정", () => {
+  it("wrangler.jsonc 의 crons 와 코드의 CRON 이 같다 (한쪽만 바꾸면 예약 실행이 엉뚱한 수집을 함)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const { CRON } = await import("./index");
+    const jsonc = readFileSync(fileURLToPath(new URL("../wrangler.jsonc", import.meta.url).href), "utf8");
+    const crons = JSON.parse(/"crons":\s*(\[[^\]]*\])/.exec(jsonc)![1]);
+    expect(crons.sort()).toEqual(Object.values(CRON).sort());
+  });
+});
