@@ -5,17 +5,19 @@
 ## 한 줄 목표
 [harness-template](https://github.com/kyungchan3007/harness-template)으로 웹사이트를 만들되, **코딩 에이전트가 이슈부터 PR까지 자동으로** 만든다. 이 과정 자체가 템플릿을 직접 써 본 첫 사례가 되고, LinkedIn 공유 전에 보여 줄 결과물이 된다.
 
-## 현재 상태
-- 2026-10-28: 템플릿(커밋 `0916657`) 파일 복사 + `git init` + 첫 커밋 `07a0579` (로컬만 · 원격 없음)
-- 게이트 `bash .agents/checks.sh` ALL PASS (하네스 테스트 13/13) · 밖 쓰기 차단 훅 동작 확인
-- 0단계 끝: 아래 "0단계 답" 참고
-- 공개 저장소 [kyungchan3007/harness-auto-web](https://github.com/kyungchan3007/harness-auto-web) · PR #1 = 작업 0001 하네스 세팅 + README (`harness-approved` 라벨: 사용자 채팅 승인으로 에이전트가 붙임) · **머지는 사람**
-- 이슈 #2~#10 = 작업 0002~0010 (이슈 번호 = 작업 번호) · 이슈마다 연결 브랜치 `task/NNNN-이름` (main 기준 → 0001 머지 후 시작 시 main 반영)
-- 사용자가 GitHub Projects 보드를 만들어 줄 예정 → 만들어지면 이슈 #2~#10 넣기
-- 머지됨: #1 하네스 · #11 Next.js(0002) · #13 아키텍처 문서(0012) · #14 디자인 문서(0003) · #16 모노레포(0015) · #18 디자인 시스템(0017)
-- 결정 원본: `docs/architecture.md` (Turborepo · VSA · Hono on Cloudflare) · `docs/design.md` (Apple 느낌 · 거의 어둡게 · 오로라 · three.js · Base UI + Tailwind v4)
-- 다음: ④ 오픈 데이터 수집(#4) 논의 → 3D 오브젝트 이슈 → 기능 이슈(#5~#9) · 백엔드(apps/api) 이슈
-- **사용자에게는 반드시 한국어로** (이 세션에서 영어 답변 여러 번 — 사용자가 매번 지적)
+## 현재 상태 (2026-10-28 끝)
+| 항목 | 상태 |
+| --- | --- |
+| 저장소 | [kyungchan3007/harness-auto-web](https://github.com/kyungchan3007/harness-auto-web) 공개 · main 보호(필수 검사 `gate`) · 자동 머지 켬 |
+| 보드 | GitHub Projects [auto-web #11](https://github.com/users/kyungchan3007/projects/11) · `.tmp/board.sh <번호> <상태>` 로 옮김 (로컬 도구) |
+| 사이트 | **`tripfx.pages.dev`** — Cloudflare Pages ↔ GitHub 연결 · main 머지마다 자동 배포 · PR 마다 미리보기 |
+| API | **`https://tripfx-api.developfff.workers.dev`** — Worker `tripfx-api` · D1 `hav-db` · Cron 평일 03:00 UTC(환율) · 매달 1일 04:00 UTC(물가) |
+| 비밀값 | `KOREAEXIM_KEY` · `ADMIN_TOKEN` (사람이 wrangler secret 으로 등록 · 에이전트는 값을 모름) |
+| 데이터 | 환율 1년치(수출입은행 244일 · 예비 2일 · 공휴일 16일 비움) · 물가 200개국 — 사람이 `.tmp/backfill.sh` 로 채움 |
+| 도메인 | `saju-me.com` 은 이전 서비스 주소 연결만 끊어 둠 (프로젝트 · 도메인은 남음) · 이 프로젝트는 무료 주소 사용 |
+| 결정 원본 | `docs/architecture.md` · `docs/design.md` · `docs/domain/*` |
+| 다음 | 화면 작업 시작 = 공개 시작: 화면 ↔ API 연결 → 홈 첫 화면 → 지구본 → 동전 · 추이 → 리본 → 직구 → 물가 → 만드는 중 |
+| 언어 | **사용자에게는 반드시 한국어** — Stop 훅 `korean-gate.mjs` 가 영어 답을 막음 (이 세션 실측: 150개 중 69개가 영어였음) |
 
 ## 사용자 작업 규칙 (꼭 지킬 것)
 - 사용자에게 보이는 글은 **모두 한국어**
