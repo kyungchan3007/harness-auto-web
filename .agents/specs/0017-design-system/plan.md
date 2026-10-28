@@ -23,6 +23,7 @@
 - package-lock.json
 - .claude/launch.json
 - docs/design.md
+- HANDOFF.md
 
 ## 계획 밖 변경 이유
 
