@@ -1,4 +1,4 @@
-// 홈 첫 화면 — 빌드 때 받은 데이터로 그림 (3D 는 다음 작업)
+// 홈 — 빌드 때 받은 데이터로 그림 · 첫 화면(지구본) + 통화 전체를 지역별 탭으로
 import type { Fetched } from "@/shared/api";
 import type { FxLatest } from "@hav/shared/fx";
 import type { SignalList } from "@hav/shared/signal";
@@ -6,7 +6,10 @@ import { Card } from "@hav/ui/card";
 import { NavBar } from "@hav/ui/nav-bar";
 import { Section } from "@hav/ui/section";
 import { SignalBadge } from "@hav/ui/signal-badge";
-import { CARD_CURRENCIES, SOURCE_NAME, currencyName, headline, percentileText, rateText } from "./copy";
+import { Tabs } from "@hav/ui/tabs";
+import { SOURCE_NAME, headline, percentileText, rateText } from "./copy";
+import { currencyName, groupByRegion } from "./currencies";
+import { Flag } from "./flag";
 import { GlobeLazy } from "../globe/globe-lazy";
 import { DESTINATIONS } from "../globe/geo";
 import { CountUp } from "./count-up";
@@ -21,7 +24,7 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
   const windowDays = signals.ok ? signals.data.rule.windowDays : 90;
   const hero = rates.find((r) => r.currency === HERO);
   const heroSignal = bySignal.get(HERO);
-  const cards = CARD_CURRENCIES.map((c) => rates.find((r) => r.currency === c)).filter((r) => r != null);
+  const groups = groupByRegion(rates);
   const problem = !latest.ok ? latest.reason : !signals.ok ? signals.reason : null;
 
   return (
@@ -42,11 +45,16 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
         }
       />
 
-      <Section id="today" eyebrow={hero ? `오늘의 환율 · ${hero.date} 기준 · ${SOURCE_NAME[hero.source]}` : "오늘의 환율"}>
+      <Section id="today">
         <div className="grid items-center gap-6 lg:grid-cols-[1.05fr_1fr]">
         {hero ? (
           <Reveal>
-            <h1 className="text-title font-semibold tracking-tight text-fg">{headline(HERO, heroSignal?.signal ?? null)}</h1>
+            {/* 작은 제목은 큰 제목 바로 위에 붙임 — 섹션 위에 두면 지구본 높이만큼 떨어져 보였음 */}
+            <p className="flex items-center gap-2 text-eyebrow font-semibold text-fg-2">
+              <Flag currency={HERO} />
+              오늘의 환율 · {hero.date} 기준 · {SOURCE_NAME[hero.source]}
+            </p>
+            <h1 className="mt-4 text-title font-semibold tracking-tight text-fg">{headline(HERO, heroSignal?.signal ?? null)}</h1>
             <p className="mt-6 text-hero font-bold tracking-tighter">
               <CountUp text={rateText(hero).value} className="text-aurora" />
               <span className="ml-3 text-title font-semibold text-fg">{rateText(hero).unit}</span>
@@ -67,28 +75,43 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
         </div>
       </Section>
 
-      <Section id="currencies" surface="elevated" eyebrow="다른 통화" title={<>여행 · 직구 전에,<br />한눈에.</>}>
-        {cards.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {cards.map((r, i) => {
-              const s = bySignal.get(r.currency);
-              const t = rateText(r);
-              return (
-                <Reveal key={r.currency} delay={i * 0.06}>
-                  <Card title={currencyName(r.currency)}>
-                    <p className="text-3xl font-semibold tracking-tight text-fg">
-                      {t.value}
-                      <span className="ml-1 text-base font-medium text-fg-2">{t.unit}</span>
-                    </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                      {s?.signal && <SignalBadge signal={s.signal} />}
-                      <span className="text-xs text-fg-2">{percentileText(s?.signal ?? null, s?.percentile ?? null, windowDays)}</span>
-                    </div>
-                  </Card>
-                </Reveal>
-              );
-            })}
-          </div>
+      <Section id="currencies" surface="elevated" eyebrow={`모든 통화 · ${rates.length}개`} title={<>여행 · 직구 전에,<br />한눈에.</>}>
+        {groups.length > 0 ? (
+          <Tabs
+            items={groups.map((g) => ({
+              value: g.region,
+              label: `${g.label} ${g.items.length}`,
+              content: (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {g.items.map((r) => {
+                    const s = bySignal.get(r.currency);
+                    const t = rateText(r);
+                    return (
+                      <Card
+                        key={r.currency}
+                        title={
+                          <span className="flex items-center gap-2">
+                            <Flag currency={r.currency} />
+                            {currencyName(r.currency)}
+                            <span className="text-sm font-normal text-fg-2">{r.currency}</span>
+                          </span>
+                        }
+                      >
+                        <p className="text-3xl font-semibold tracking-tight text-fg">
+                          {t.value}
+                          <span className="ml-1 text-base font-medium text-fg-2">{t.unit}</span>
+                        </p>
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          {s?.signal && <SignalBadge signal={s.signal} />}
+                          <span className="text-xs text-fg-2">{percentileText(s?.signal ?? null, s?.percentile ?? null, windowDays)}</span>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ),
+            }))}
+          />
         ) : (
           <NoData reason={problem ?? "표시할 통화가 없습니다"} />
         )}
