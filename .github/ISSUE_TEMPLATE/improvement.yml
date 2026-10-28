@@ -32,5 +32,5 @@ body:
     id: code
     attributes:
       label: 코드 예시 (선택)
-      description: 원본에는 PR 대신 이슈로 받습니다. Fork 에서 만든 코드나 링크를 붙여 주세요.
+      description: 막는 코드 예시나 링크를 붙여 주세요.
       render: javascript

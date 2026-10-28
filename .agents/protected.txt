@@ -15,6 +15,10 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
-# 프로젝트에 맞게 추가 (예)
-# src/api/generated/**
-# app.json
+# 배포 · 빌드 설정
+wrangler.toml
+next.config.*
+.env*
+
+# 데이터 형식 계약 (화면과 수집 스크립트가 함께 의존)
+src/data/schema.*
