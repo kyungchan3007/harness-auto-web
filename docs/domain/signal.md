@@ -21,4 +21,4 @@
 ## 담당 경로
 | 경로 |
 | --- |
-| src/features/signal/** |
+| apps/web/src/features/signal/** |

@@ -24,5 +24,5 @@
 ## 담당 경로
 | 경로 |
 | --- |
-| src/features/fx/** |
-| scripts/fetch/fx* |
+| apps/web/src/features/fx/** |
+| (수집 위치는 #4 논의 뒤) |
