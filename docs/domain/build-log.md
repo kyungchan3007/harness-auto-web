@@ -21,4 +21,4 @@
 ## 담당 경로
 | 경로 |
 | --- |
-| src/features/build-log/** |
+| apps/web/src/features/build-log/** |

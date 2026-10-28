@@ -20,5 +20,5 @@
 ## 담당 경로
 | 경로 |
 | --- |
-| src/features/travel-price/** |
-| scripts/fetch/travel* |
+| apps/web/src/features/travel-price/** |
+| (수집 위치는 #4 논의 뒤) |

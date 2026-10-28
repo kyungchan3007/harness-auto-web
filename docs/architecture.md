@@ -1,32 +1,91 @@
 # 구조 · 경계
 
 > 사람과 에이전트가 같이 읽는 구조 설명. **코드로 확인할 수 있는 경계는 린트로 옮기고 여기엔 이유만 남긴다.**
+> 2026-10-28 합의 (작업 0012 · 이슈 #12). 지금 코드는 아직 단일 Next.js 앱 — 모노레포 전환은 별도 이슈
 
-## 전체 흐름 (하루 1회)
-| 단계 | 무엇 | 누가 |
+## 결정 요약
+| 항목 | 결정 | 상태 |
 | --- | --- | --- |
-| 1. 수집 | 오픈 API → `src/data/*.json` (형식: `src/data/schema.*`) | 스크립트 (CI 예약 실행) (가정) |
-| 2. 작업 | 새 데이터로 이슈 → 구현 → 게이트 → PR | 에이전트 한 세션 |
-| 3. 승인 | 머지 · 배포 승인 · 비밀값 | 👤 사람 |
-| 4. 배포 | `next build` 정적 내보내기 → Cloudflare Pages · PR마다 미리보기 | CI (가정) |
+| 저장소 | 모노레포 · Turborepo (`apps/*` · `packages/*`) | 확인됨 |
+| 프론트 | `apps/web` Next.js 16 · 정적 내보내기 → Cloudflare Pages · VSA | 확인됨 |
+| 백엔드 | `apps/api` Hono → Cloudflare Workers · D1 · Cron Triggers · VSA | 확인됨 |
+| 디자인 시스템 | `packages/ui` (토큰 · 컴포넌트) — **내용은 디자인 논의 때** | 자리만 확인됨 |
+| 백엔드가 필요한 이유 | 환율 알림 · 즐겨찾기 저장 (사용자 설정 · 매일 확인 · 알림) | 확인됨 |
+| 환율 데이터 수집 위치 | Worker Cron → D1 / 저장소 JSON / 둘 다 | **미정 — 오픈 데이터 논의 때** |
+| 로그인 · 알림 수단 | 이메일 매직 링크 · 이메일 알림 | 가정 |
+| 패키지 매니저 · 이름 | npm workspaces · `@hav/<이름>` | 가정 |
 
-- 방문자는 **읽기 전용** — 서버 · 로그인 · 방문자별 세션 없음 (동시성 · 비용 때문에 확인됨)
-- 화면은 빌드 시점의 JSON만 읽는다 → 브라우저에서 외부 API를 직접 부르지 않음 (API 키 노출 방지) (가정)
-
-## 폴더 (가정 — Next.js 세팅 작업에서 확정)
+## 전체 그림
 ```text
-src/
-├── app/                 라우트 · 조립 (페이지별 폴더)
-├── features/<기능>/     fx · signal · import-calc · travel-price · build-log
-├── shared/              공용 UI · 포맷 · 날짜 (features 를 import 하지 않음)
-└── data/                수집 결과 JSON + schema (계약 · 보호 파일)
-scripts/fetch/           API별 수집 스크립트 (화면 코드를 import 하지 않음)
+                 ┌──────────── Cloudflare ─────────────┐
+방문자 ──▶ Pages: apps/web (정적 HTML)                   │
+             │  읽기 전용 화면: 환율 · 신호 · 계산기 · 일지   │
+             └──▶ Workers: apps/api (Hono)               │
+                    ├─ 로그인 · 알림 설정 · 즐겨찾기 API     │
+                    ├─ D1: 사용자 · 알림 조건 · 즐겨찾기     │
+                    └─ Cron: 매일 환율 확인 → 알림 발송      │
+                 └──────────────────────────────────────┘
 ```
+- 화면은 백엔드 없이도 뜬다 — 백엔드는 로그인이 필요한 기능(알림 · 즐겨찾기)에만 (가정)
+- 브라우저는 외부 환율 API를 직접 부르지 않는다 (API 키 노출 · CORS)
+
+## 저장소 구조 (목표)
+```text
+apps/
+├── web/                         @hav/web — Next.js
+│   └── src/
+│       ├── app/                 라우트 조립만 (기능 로직 없음)
+│       └── features/<기능>/     VSA 슬라이스: 화면 · 데이터 읽기 · 테스트
+└── api/                         @hav/api — Hono (Workers)
+    └── src/
+        ├── index.ts             app.route() 로 슬라이스 묶기 + scheduled(Cron)
+        └── features/<기능>/     VSA 슬라이스: 라우트(핸들러 직접) · 로직 · D1 쿼리 · 스키마 · 테스트
+packages/
+├── ui/                          @hav/ui — 디자인 시스템 (토큰 · 컴포넌트)
+├── shared/                      @hav/shared — 공용 타입 · zod 스키마
+└── config/                      @hav/config — tsconfig · eslint 공용 설정
+turbo.json                       작업 그래프 (build · lint · typecheck · test)
+```
+
+## 규칙
+### Turborepo ([근거](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository))
+| 규칙 | 이유 |
+| --- | --- |
+| 앱 · 서비스는 `apps/`, 나머지는 `packages/` · 중첩 glob(`apps/**`) 금지 | 공식 권장 구조 |
+| 패키지마다 `package.json` · 고유 이름(`@hav/…`) · `exports` 로 진입점 지정 · 전체를 다시 내보내는 barrel 파일 지양 | 패키지 경계를 명확히 |
+| 패키지끼리 `../` 상대 경로 import 금지 → 패키지 이름으로 import | 의존성이 lock 파일 · 작업 그래프에 드러나게 |
+| 루트 `tsconfig.json` 두지 않음 → 각 패키지가 `@hav/config` 를 상속 | 공식 권장 |
+| 루트 `package.json` 은 `private` · 스크립트는 `turbo run …` | 게이트(`checks.sh`)가 루트 스크립트를 그대로 부름 |
+
+### VSA — 프론트 · 백엔드 공통 ([근거](https://www.jimmybogard.com/vertical-slice-architecture/))
+| 규칙 | 이유 |
+| --- | --- |
+| 기능(요청) 하나 = `features/<기능>/` 폴더 하나 — 화면 · 로직 · 데이터 접근 · 테스트를 같이 둠 | 변경이 슬라이스 하나에 머묾 → 이슈 하나 = 폴더 하나 = 에이전트 파일 계획 |
+| 슬라이스끼리 직접 import 금지 — 함께 쓰는 것은 `packages/shared` · `packages/ui` 로 | "슬라이스 사이 결합은 줄이고, 슬라이스 안 결합은 키운다" |
+| 공용 계층(repository · service)을 미리 만들지 않음 — 슬라이스마다 단순하게 시작, 복잡해지면 그 슬라이스만 나눔 | 원문: 슬라이스마다 방식이 달라도 됨 |
+
+### Hono ([근거](https://hono.dev/docs/guides/best-practices))
+| 규칙 | 이유 |
+| --- | --- |
+| Rails식 컨트롤러 파일을 따로 만들지 않음 — 경로 옆에 핸들러를 바로 씀 (필요하면 `hono/factory` 의 `createHandlers`) | 분리하면 경로 파라미터 타입 추론이 깨짐 |
+| 슬라이스마다 `Hono` 인스턴스 → `index.ts` 에서 `app.route('/경로', 슬라이스)` | 공식 권장 큰 앱 구조 |
+| 라우트는 체인으로 정의 · `typeof app` 을 `AppType` 으로 내보냄 → `apps/web` 은 `hc<AppType>()` 로 호출 | Hono RPC: 프론트가 API 타입을 그대로 받음 |
+| 입력값은 zod 스키마로 검증 · 스키마는 `@hav/shared` 에 | 프론트 · 백엔드가 같은 형식 |
+| HTTP 와 예약 실행을 한 Worker 에: `export default { fetch: app.fetch, scheduled }` | [Cloudflare Hono 가이드](https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/hono/index.md) · [Cron 예제](https://developers.cloudflare.com/workers/examples/cron-trigger/) |
 
 ## 경계 규칙 → 강제 위치
 | 규칙 | 강제 | 위치 |
 | --- | --- | --- |
-| 화면은 `src/data/` JSON만 읽고 외부 API를 부르지 않는다 | (예정) eslint no-restricted-imports · fetch 금지 | eslint.config |
-| features 끼리 직접 import 하지 않는다 | (예정) eslint no-restricted-imports | eslint.config |
-| 수집 결과는 schema 를 통과해야 커밋된다 | (예정) test | scripts/fetch 테스트 |
-| API 키는 `.env*` · CI Secrets 에만 | `.gitignore` + 보호 파일 | `.gitignore` · `.agents/protected.txt` |
+| 슬라이스끼리 import 금지 | (예정) eslint `no-restricted-imports` | `@hav/config` eslint |
+| 패키지끼리 `../` import 금지 | (예정) eslint `no-restricted-imports` | `@hav/config` eslint |
+| `apps/web` 은 외부 환율 API를 직접 부르지 않음 | (예정) eslint · 테스트 | `@hav/config` eslint |
+| API 입력은 zod 검증을 거침 | (예정) 슬라이스 테스트 | `apps/api` 테스트 |
+| 비밀값은 `.env*` · Wrangler secret · CI Secrets 에만 | `.gitignore` + 보호 파일 | `.gitignore` · `.agents/protected.txt` |
+
+## 아직 정하지 않은 것
+| 항목 | 언제 |
+| --- | --- |
+| 환율 수집 위치 · API 선정 · 하루 1회 실행 주체 | 오픈 데이터 논의 (#4) |
+| 디자인 토큰 · 컴포넌트 목록 | 디자인 논의 (#3) |
+| 로그인 · 알림 방식 · D1 테이블 | 백엔드 이슈 만들 때 |
+| Cloudflare 무료 한도 (Cron 개수 등) | 설정할 때 공식 한도 페이지로 확인 (출처마다 숫자가 다름) |

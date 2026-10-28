@@ -23,4 +23,4 @@
 ## 담당 경로
 | 경로 |
 | --- |
-| src/features/import-calc/** |
+| apps/web/src/features/import-calc/** |
