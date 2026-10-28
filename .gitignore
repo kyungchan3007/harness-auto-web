@@ -20,3 +20,6 @@ npm-debug.log*
 # cloudflare
 .wrangler/
 dist/
+
+# wrangler 로컬 비밀값
+.dev.vars
