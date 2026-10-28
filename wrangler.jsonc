@@ -1,0 +1,10 @@
+// Cloudflare Pages(사이트 tripfx) 설정 — 이 파일이 있으면 Pages 바인딩의 원본은 여기 (대시보드에서는 못 바꿈)
+// 빌드 명령 · Node 버전은 대시보드 그대로 · API Worker 설정은 apps/api/wrangler.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tripfx",
+  "compatibility_date": "2026-10-01",
+  "pages_build_output_dir": "apps/web/out",
+  // functions/bff 가 API Worker 를 바로 부름 (인터넷을 거치지 않음)
+  "services": [{ "binding": "API", "service": "tripfx-api" }]
+}
