@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: 💬 써 본 후기 · 적용 사례
-    url: https://github.com/kyungchan3007/harness-template/discussions/categories/show-and-tell
-    about: 어떤 프로젝트에 어떻게 썼는지 Discussions에 남겨 주세요
+  - name: 🧰 하네스 자체 문제 (원본 템플릿)
+    url: https://github.com/kyungchan3007/harness-template/issues
+    about: 게이트 · 훅 · 스크립트 자체의 문제는 원본 harness-template 저장소에 이슈로 남겨 주세요
