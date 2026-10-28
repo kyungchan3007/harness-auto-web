@@ -17,6 +17,7 @@
 | 공개 일지 | git 커밋 · PR · 작업 폴더 (데이터 저장 위치와 무관 · 수집 기록은 운영용) | 확인됨 |
 | 로그인 · 알림 수단 | 이메일 매직 링크 · 이메일 알림 | 가정 |
 | 패키지 매니저 · 이름 | npm workspaces · `@hav/<이름>` | 가정 |
+| 주소 | 사이트 `tripfx.pages.dev` · API `tripfx-api.developfff.workers.dev` — Cloudflare 무료 주소, `saju-me` 는 쓰지 않음 · 도메인은 나중에 사면 연결만 바꿈 | 확인됨 (2026-10-28) |
 
 ## 전체 그림
 ```text
