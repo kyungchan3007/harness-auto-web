@@ -12,6 +12,9 @@ html {
 
 body {
   font-family: var(--font-sans);
+  /* 한국어는 낱말 중간에서 줄이 바뀌지 않게 ("한국수 / 출입은행" 을 휴대폰에서 봄) */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
