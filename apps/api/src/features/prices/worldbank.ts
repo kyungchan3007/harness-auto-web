@@ -45,7 +45,14 @@ export function parseIndicator(body: unknown): Map<string, Map<number, number>> 
   return out;
 }
 
-/** 같은 나라 · 같은 연도에 두 값이 다 있을 때만 물가 수준 (TRV-02: 지어내지 않음) */
+/**
+ * 믿을 수 있는 물가 수준 범위 (미국 = 1) — 실제 나라들은 0.2 ~ 2 안팎.
+ * 짐바브웨 0.0003 · 라이베리아 0.0026 처럼 PPP 와 환율의 통화 단위가 어긋난 원본 오류를 뺀다 (2026-10-28 실제 응답에서 발견)
+ */
+export const PLAUSIBLE_LEVEL = { min: 0.05, max: 5 } as const;
+export const isPlausibleLevel = (level: number) => level >= PLAUSIBLE_LEVEL.min && level <= PLAUSIBLE_LEVEL.max;
+
+/** 같은 나라 · 같은 연도에 두 값이 다 있고, 믿을 수 있는 범위일 때만 물가 수준 (TRV-02: 지어내지 않음) */
 export function combineLevels(
   countries: Set<string>,
   ppp: Map<string, Map<number, number>>,
@@ -58,7 +65,9 @@ export function combineLevels(
     for (const [year, p] of byYear) {
       const f = fx.get(country)?.get(year);
       if (!f) continue;
-      rows.push({ country, year, level: Math.round((p / f) * 10000) / 10000, source: PRICE_SOURCE, fetchedAt });
+      const level = Math.round((p / f) * 10000) / 10000;
+      if (!isPlausibleLevel(level)) continue;
+      rows.push({ country, year, level, source: PRICE_SOURCE, fetchedAt });
     }
   }
   return rows.sort((a, b) => a.country.localeCompare(b.country) || a.year - b.year);

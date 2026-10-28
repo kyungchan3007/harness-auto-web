@@ -73,8 +73,8 @@ turbo.json                       작업 그래프 (build · lint · typecheck ·
 | --- | --- |
 | Rails식 컨트롤러 파일을 따로 만들지 않음 — 경로 옆에 핸들러를 바로 씀 (필요하면 `hono/factory` 의 `createHandlers`) | 분리하면 경로 파라미터 타입 추론이 깨짐 |
 | 슬라이스마다 `Hono` 인스턴스 → `index.ts` 에서 `app.route('/경로', 슬라이스)` | 공식 권장 큰 앱 구조 |
-| 라우트는 체인으로 정의 · `typeof app` 을 `AppType` 으로 내보냄 → `apps/web` 은 `hc<AppType>()` 로 호출 | Hono RPC: 프론트가 API 타입을 그대로 받음 |
-| 입력값은 zod 스키마로 검증 · 스키마는 `@hav/shared` 에 | 프론트 · 백엔드가 같은 형식 |
+| 요청 · 응답 모양은 `@hav/shared` zod 스키마 한 곳 · API 는 `validate()` 로 요청 검사 · 실패는 `ApiError` 한 모양 400 | 사용자 확인: "api는 zod 사용하도록 지저분한거 싫으니까" (작업 0033) |
+| `apps/web` 은 빌드 때 fetch 로 부르고 **같은 zod 스키마로 응답을 검사** — 실패해도 빌드는 성공 · 화면은 "자료 없음" (Hono RPC `hc` 는 쓰지 않음: 타입만 주고 런타임 검사는 안 해서) | 작업 0035 · 실제 응답에서 원본 오류(짐바브웨 물가 0.0003)를 스키마가 잡음 |
 | HTTP 와 예약 실행을 한 Worker 에: `export default { fetch: app.fetch, scheduled }` | [Cloudflare Hono 가이드](https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/hono/index.md) · [Cron 예제](https://developers.cloudflare.com/workers/examples/cron-trigger/) |
 
 ## 경계 규칙 → 강제 위치

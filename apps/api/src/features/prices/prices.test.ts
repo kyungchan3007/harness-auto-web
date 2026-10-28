@@ -12,18 +12,19 @@ const COUNTRIES = [
     { id: "JPN", region: { id: "EAS" } },
     { id: "USA", region: { id: "NAC" } },
     { id: "WLD", region: { id: "NA" } }, // 집계 — 빼야 함
+    { id: "ZWE", region: { id: "SSF" } },
   ],
 ];
 const indicator = (rows: [string, string, number | null][]) => [
   { page: 1, pages: 1, per_page: "20000", total: rows.length, lastupdated: "2026-10-08" },
   rows.map(([c, date, value]) => ({ countryiso3code: c, date, value })),
 ];
-const PPP = indicator([["KOR", "2025", 880.125], ["JPN", "2025", 103.337], ["USA", "2025", 1], ["WLD", "2025", 0.5], ["JPN", "2024", null]]);
-const FX = indicator([["KOR", "2025", 1422.441], ["JPN", "2025", 149.658], ["USA", "2025", 1], ["WLD", "2025", 1]]);
+const PPP = indicator([["KOR", "2025", 880.125], ["JPN", "2025", 103.337], ["USA", "2025", 1], ["WLD", "2025", 0.5], ["JPN", "2024", null], ["ZWE", "2021", 1]]);
+const FX = indicator([["KOR", "2025", 1422.441], ["JPN", "2025", 149.658], ["USA", "2025", 1], ["WLD", "2025", 1], ["ZWE", "2021", 3333]]);
 
 describe("세계은행 응답 읽기", () => {
   it("집계(Aggregates)는 나라 목록에서 뺀다", () => {
-    expect([...parseCountries(COUNTRIES)].sort()).toEqual(["JPN", "KOR", "USA"]);
+    expect([...parseCountries(COUNTRIES)].sort()).toEqual(["JPN", "KOR", "USA", "ZWE"]);
   });
 
   it("빈 값은 버린다", () => {
@@ -37,6 +38,11 @@ describe("세계은행 응답 읽기", () => {
 
   it("여러 쪽으로 나뉘면 조용히 일부만 받지 않고 실패", () => {
     expect(() => parseIndicator([{ page: 1, pages: 2, total: 40000 }, []])).toThrow(/pages=2/);
+  });
+
+  it("믿을 수 없는 값(통화 단위가 어긋난 원본 오류)은 뺀다 — 짐바브웨 0.0003 이 실제로 들어왔었음", () => {
+    const rows = combineLevels(parseCountries(COUNTRIES), parseIndicator(PPP), parseIndicator(FX), AT);
+    expect(rows.find((r) => r.country === "ZWE")).toBeUndefined();
   });
 
   it("물가 수준 = PPP ÷ 시장 환율 · 두 값이 다 있는 나라 · 연도만 (TRV-02)", () => {
