@@ -15,7 +15,7 @@ describe("BFF 허용 경로", () => {
     const res = await handleBff(get("/bff/activity?after=3&limit=10"), api);
     expect(res.status).toBe(200);
     expect(new URL(seen[0].url).pathname + new URL(seen[0].url).search).toBe("/activity?after=3&limit=10");
-    for (const p of ["/bff/fx/latest", "/bff/fx/usd/history", "/bff/signal", "/bff/signal/JPY", "/bff/prices/levels"]) {
+    for (const p of ["/bff/fx/latest", "/bff/fx/usd/history", "/bff/signal", "/bff/signal/JPY", "/bff/prices/levels", "/bff/tasks"]) {
       expect((await handleBff(get(p), api)).status, p).toBe(200);
     }
   });

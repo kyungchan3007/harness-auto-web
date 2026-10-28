@@ -10,6 +10,7 @@ import { collectPriceLevels } from "./features/prices/collect";
 import { priceRoutes } from "./features/prices/routes";
 import { d1PriceStore } from "./features/prices/store";
 import { signalRoutes } from "./features/signal/routes";
+import { taskRoutes } from "./features/tasks/routes";
 
 export const app = new Hono<{ Bindings: Env }>()
   .get("/health", async (c) => {
@@ -22,7 +23,8 @@ export const app = new Hono<{ Bindings: Env }>()
   .route("/fx", fxRoutes)
   .route("/signal", signalRoutes)
   .route("/prices", priceRoutes)
-  .route("/activity", activityRoutes);
+  .route("/activity", activityRoutes)
+  .route("/tasks", taskRoutes);
 
 /** apps/web 은 hc<AppType>() 로 부른다 (Hono RPC) */
 export type AppType = typeof app;

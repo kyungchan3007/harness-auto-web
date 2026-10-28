@@ -1,0 +1,64 @@
+name: sync-tasks
+# 이슈 · 머지된 PR 목록을 D1(github_items) 에 저장 → 만드는 중 페이지의 지난 작업 · 작업 이름
+# GitHub 은 이 작업의 자동 토큰(GITHUB_TOKEN · 끝나면 사라짐)으로 읽음 · D1 쓰기는 배포용 CLOUDFLARE_API_TOKEN
+# 제목은 남이 쓴 글일 수 있는 데이터 — 셸에 끼워 넣지 않고 파일로만 넘기고, 변환기가 주인 이슈 · 머지된 PR 만 골라 이스케이프
+on:
+  workflow_run:
+    workflows: [deploy-api] # 머지 → 배포(마이그레이션) 가 끝난 뒤
+    types: [completed]
+  issues:
+    types: [opened, edited, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: sync-tasks
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: 비밀값 확인
+        id: secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "CLOUDFLARE_API_TOKEN · CLOUDFLARE_ACCOUNT_ID 가 없어 건너뜁니다" >> "$GITHUB_STEP_SUMMARY"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ok == 'true'
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ok == 'true'
+        with:
+          node-version: 22
+      - if: steps.secrets.outputs.ok == 'true'
+        run: npm ci
+      - name: GitHub 목록 → SQL
+        if: steps.secrets.outputs.ok == 'true'
+        run: |
+          mkdir -p .tmp
+          gh api --paginate "repos/${{ github.repository }}/issues?state=all&per_page=100" > .tmp/items.json
+          node --experimental-strip-types apps/api/scripts/tasks-sql.ts < .tmp/items.json > .tmp/tasks.sql 2>> "$GITHUB_STEP_SUMMARY"
+      - name: D1 에 저장
+        if: steps.secrets.outputs.ok == 'true'
+        working-directory: apps/api
+        run: npx wrangler d1 execute hav-db --remote --file ../../.tmp/tasks.sql --yes
+        env:
+          CI: "1"
+      - name: 확인
+        if: steps.secrets.outputs.ok == 'true'
+        run: curl -fsS https://tripfx-api.developfff.workers.dev/tasks | head -c 300 | tee -a "$GITHUB_STEP_SUMMARY"

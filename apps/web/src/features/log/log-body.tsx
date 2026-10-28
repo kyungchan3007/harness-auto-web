@@ -1,13 +1,17 @@
 "use client";
 
-// 만드는 중 — 가운데 고정 패널 장면 ①~③ → (지난 작업: 서버가 그린 children) → 끝 숫자
+// 만드는 중 — 가운데 고정 패널 장면 ①~③ → ④ 지난 작업 → 끝 숫자
 // 패널은 화면에 고정하고 스크롤로 장면만 바뀜 (참고 페이지 방식) · 움직임 줄이기면 장면을 차례로 쌓음
 import { CountUp } from "@hav/ui/count-up";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { type ReactNode, useRef, useState } from "react";
+import type { TasksSummary } from "@hav/shared/tasks";
+import { useRef, useState } from "react";
+import type { Fetched } from "../../shared/api";
+import { DoneTasks } from "./done-tasks";
 import { LivePanel, type Mode } from "./live-panel";
 import { todayStats } from "./status";
 import { type Activity, useActivity } from "./use-activity";
+import { useTasks } from "./use-tasks";
 
 const SCENES: { mode: Mode; title: string; body: (blocked: number) => string }[] = [
   { mode: "status", title: "지금, 무엇을 하고 있을까.", body: () => "에이전트가 도구를 쓸 때마다 이 패널이 바뀝니다. 10분 넘게 조용하면 쉬는 중이에요." },
@@ -15,15 +19,18 @@ const SCENES: { mode: Mode; title: string; body: (blocked: number) => string }[]
   { mode: "blocked", title: "막힌 것도 숨기지 않습니다.", body: (n) => (n > 0 ? `오늘 하네스가 멈춰 세운 순간 — ${n}번.` : "오늘은 아직 하네스가 막은 일이 없습니다.") },
 ];
 
-export function LogBody({ names, doneCount, children }: { names: Record<string, string>; doneCount: number; children: ReactNode }) {
+export function LogBody({ buildTasks }: { buildTasks: Fetched<TasksSummary> }) {
   const activity = useActivity();
+  const tasks = useTasks(buildTasks);
+  const names = tasks.ok ? tasks.data.names : {};
+  const doneCount = tasks.ok ? tasks.data.done.length : 0;
   const stats = todayStats(activity.events, activity.now);
   const reduce = useReducedMotion();
 
   return (
     <>
       {reduce ? <StackedScenes activity={activity} names={names} blocked={stats.blocked} /> : <PinnedScenes activity={activity} names={names} blocked={stats.blocked} />}
-      {children}
+      <DoneTasks tasks={tasks} />
       <section data-surface="elevated" className="bg-surface px-4 py-24 text-fg sm:px-8 sm:py-32">
         <div className="mx-auto grid max-w-5xl gap-12 sm:grid-cols-3">
           <Stat value={doneCount} label="머지된 작업" />
