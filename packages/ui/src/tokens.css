@@ -1,0 +1,97 @@
+/*
+ * 디자인 토큰 — 원본은 이 파일 하나 (docs/design.md 결정을 값으로)
+ * 섹션마다 data-surface="dark | elevated | light" 로 배경을 고르면 글자 · 포인트 · 신호 색이 함께 바뀐다
+ * 대비는 contrast.test.ts 가 이 파일을 직접 읽어 검사한다 — 값을 바꾸면 게이트가 다시 잰다
+ */
+
+:root,
+[data-surface="dark"] {
+  --hav-surface: #000000;
+  --hav-surface-2: #1d1d1f;
+  --hav-fg: #f5f5f7;
+  --hav-fg-2: #86868b;
+  --hav-accent: #4ff0e0;
+  --hav-on-accent: #000000;
+  --hav-aurora-1: #4ff0e0;
+  --hav-aurora-2: #9c8cff;
+  --hav-aurora-3: #ff8ad8;
+  --hav-cheap: #4c9bff;
+  --hav-normal: #c7c7cc;
+  --hav-expensive: #ff5a5f;
+  --hav-line: #424245;
+}
+
+[data-surface="elevated"] {
+  --hav-surface: #1d1d1f;
+  --hav-surface-2: #2c2c2e;
+  --hav-fg: #f5f5f7;
+  --hav-fg-2: #a1a1a6;
+  --hav-accent: #4ff0e0;
+  --hav-on-accent: #000000;
+  --hav-aurora-1: #4ff0e0;
+  --hav-aurora-2: #9c8cff;
+  --hav-aurora-3: #ff8ad8;
+  --hav-cheap: #4c9bff;
+  --hav-normal: #c7c7cc;
+  --hav-expensive: #ff5a5f;
+  --hav-line: #48484a;
+}
+
+[data-surface="light"] {
+  --hav-surface: #f5f5f7;
+  --hav-surface-2: #ffffff;
+  --hav-fg: #1d1d1f;
+  --hav-fg-2: #6e6e73;
+  --hav-accent: #08756b;
+  --hav-on-accent: #ffffff;
+  --hav-aurora-1: #08756b;
+  --hav-aurora-2: #6d58e0;
+  --hav-aurora-3: #b8327f;
+  --hav-cheap: #1f63d6;
+  --hav-normal: #6e6e73;
+  --hav-expensive: #d7263d;
+  --hav-line: #d2d2d7;
+}
+
+@theme inline {
+  --color-surface: var(--hav-surface);
+  --color-surface-2: var(--hav-surface-2);
+  --color-fg: var(--hav-fg);
+  --color-fg-2: var(--hav-fg-2);
+  --color-accent: var(--hav-accent);
+  --color-on-accent: var(--hav-on-accent);
+  --color-aurora-1: var(--hav-aurora-1);
+  --color-aurora-2: var(--hav-aurora-2);
+  --color-aurora-3: var(--hav-aurora-3);
+  --color-cheap: var(--hav-cheap);
+  --color-normal: var(--hav-normal);
+  --color-expensive: var(--hav-expensive);
+  --color-line: var(--hav-line);
+}
+
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* 참고 페이지 실측: 큰 제목 40~48px · 소제목 21px (docs/design.md) */
+  --text-hero: clamp(3rem, 9vw, 7.5rem);
+  --text-hero--line-height: 1.02;
+  --text-title: clamp(2.25rem, 5vw, 3rem);
+  --text-title--line-height: 1.1;
+  --text-eyebrow: 1.3125rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-lead: 1.3125rem;
+  --text-lead--line-height: 1.5;
+
+  --radius-card: 1.75rem;
+  --radius-pill: 980px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 오로라 그라데이션 — 큰 숫자 · 큰 제목에만 (작은 글자에 쓰지 않음) */
+@utility text-aurora {
+  background-image: linear-gradient(90deg, var(--hav-aurora-1), var(--hav-aurora-2), var(--hav-aurora-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
