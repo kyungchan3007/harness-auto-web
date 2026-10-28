@@ -72,14 +72,17 @@ function Arc({ to, color, animate, offset }: { to: (typeof DESTINATIONS)[number]
 function Earth({ arcs, animate }: { arcs: ArcSignal[]; animate: boolean }) {
   const spin = useRef<Group>(null);
   const bySignal = useMemo(() => new Map(arcs.map((a) => [a.currency, a.signal])), [arcs]);
-  useFrame((_, delta) => {
-    if (animate && spin.current) spin.current.rotation.y += delta * 0.06;
+  // 한국 주변에서만 천천히 오감 (사용자 확인: "한국 주변에서만 오가게 해줘") — 서울이 가장자리로 밀리지 않게 ±0.35 rad · 한 번 오가는 데 약 21초
+  //   ±0.55 로는 끝에서 서울이 테두리까지 가서 호가 거의 숨는 것을 화면에서 봄
+  const base = faceRotationY(SEOUL) - 0.3;
+  useFrame(({ clock }) => {
+    if (animate && spin.current) spin.current.rotation.y = base + Math.sin(clock.elapsedTime * 0.3) * 0.35;
   });
   const seoul = toVec3(SEOUL.lat, SEOUL.lng, 1.005);
   return (
     // 기울기 · 처음에 서울이 앞을 보게
     <group rotation={[0.35, 0, 0]}>
-      <group ref={spin} rotation={[0, faceRotationY(SEOUL) - 0.5, 0]}>
+      <group ref={spin} rotation={[0, base, 0]}>
         <mesh>
           <sphereGeometry args={[1, 64, 64]} />
           <meshBasicMaterial color="#07080c" />

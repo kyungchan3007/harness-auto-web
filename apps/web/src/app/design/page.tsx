@@ -8,14 +8,14 @@ import { Tabs } from "@hav/ui/tabs";
 import { Tooltip } from "@hav/ui/tooltip";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "디자인 시스템 · harness-auto-web" };
+export const metadata: Metadata = { title: "디자인 시스템 · Tripfx" };
 
 // 디자인 시스템 확인용 — 숫자는 모두 예시 (실제 데이터 아님)
 export default function DesignPage() {
   return (
     <>
       <NavBar
-        title="harness-auto-web"
+        title="Tripfx"
         links={[
           { href: "#numbers", label: "큰 숫자" },
           { href: "#cards", label: "카드" },

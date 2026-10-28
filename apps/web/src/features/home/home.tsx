@@ -28,6 +28,8 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
     <>
       <NavBar
         title="Tripfx"
+        // eslint-disable-next-line @next/next/no-img-element -- 정적 내보내기 · 작은 로고 하나
+        logo={<img src="/icon.svg" alt="" width={24} height={24} className="size-6" />}
         links={[
           { href: "#today", label: "오늘 환율" },
           { href: "#currencies", label: "통화" },
