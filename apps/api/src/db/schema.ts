@@ -52,3 +52,14 @@ export const activityEvents = sqliteTable("activity_events", {
   ok: integer("ok", { mode: "boolean" }),
   task: text("task"), // NNNN
 });
+
+/** GitHub 이슈 · 머지된 PR — GitHub Actions(sync-tasks.yml)가 통째로 바꿔 넣음 · 만드는 중 페이지의 지난 작업 · 작업 이름 */
+export const githubItems = sqliteTable("github_items", {
+  number: integer("number").primaryKey(), // 이슈 · PR 번호 (GitHub 에서 서로 겹치지 않음)
+  kind: text("kind", { enum: ["issue", "pr"] }).notNull(),
+  task: text("task"), // 제목의 [NNNN]
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  mergedAt: text("merged_at"), // PR 만
+  syncedAt: text("synced_at").notNull(),
+});

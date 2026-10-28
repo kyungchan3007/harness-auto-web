@@ -12,6 +12,7 @@ const ROUTES: [RegExp, number][] = [
   [/^\/fx\/[A-Za-z]{3}\/history$/, 300],
   [/^\/signal(\/[A-Za-z]{3})?$/, 300],
   [/^\/prices\/levels$/, 300],
+  [/^\/tasks$/, 60], // 지난 작업 · 작업 이름 (GitHub Actions 가 저장)
 ];
 
 export const BFF_PREFIX = "/bff";

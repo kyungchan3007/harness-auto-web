@@ -2,6 +2,7 @@
 import { FxLatest } from "@hav/shared/fx";
 import { PriceLevels } from "@hav/shared/prices";
 import { CurrencySignal, SignalList } from "@hav/shared/signal";
+import { TasksSummary } from "@hav/shared/tasks";
 import type { z } from "zod";
 
 export const DEFAULT_API = "https://tripfx-api.developfff.workers.dev";
@@ -32,4 +33,5 @@ export const api = {
   signals: (o?: ApiOptions) => getJson("/signal", SignalList, o),
   signal: (currency: string, o?: ApiOptions) => getJson(`/signal/${encodeURIComponent(currency)}`, CurrencySignal, o),
   priceLevels: (o?: ApiOptions) => getJson("/prices/levels?base=KOR", PriceLevels, o),
+  tasks: (o?: ApiOptions) => getJson("/tasks", TasksSummary, o),
 };

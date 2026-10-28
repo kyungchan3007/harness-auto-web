@@ -15,6 +15,13 @@
       "when": 1793193854315,
       "tag": "0001_absent_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793198383251,
+      "tag": "0002_ambitious_retro_girl",
+      "breakpoints": true
     }
   ]
 }

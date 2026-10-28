@@ -9,7 +9,8 @@
     "./signal": "./src/signal.ts",
     "./prices": "./src/prices.ts",
     "./errors": "./src/errors.ts",
-    "./activity": "./src/activity.ts"
+    "./activity": "./src/activity.ts",
+    "./tasks": "./src/tasks.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

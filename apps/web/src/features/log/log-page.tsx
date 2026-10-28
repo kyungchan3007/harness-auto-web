@@ -1,17 +1,12 @@
 // 만드는 중 페이지 — 시작 제목 → 가운데 고정 패널 ①~③ → ④ 지난 작업 → 끝 숫자 (docs/design.md "만드는 중" 페이지)
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
-import { Card } from "@hav/ui/card";
+import type { TasksSummary } from "@hav/shared/tasks";
 import { Reveal } from "@hav/ui/reveal";
-import { Section } from "@hav/ui/section";
-import { type DoneTask, REPO_URL } from "./github";
+import { REPO_URL } from "./done-tasks";
 import { LogBody } from "./log-body";
 
-const SHOW_DONE = 12;
-const dateText = (iso: string) => new Date(iso).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric" });
-
-export function LogPage({ done, names }: { done: Fetched<DoneTask[]>; names: Record<string, string> }) {
-  const tasks = done.ok ? done.data : [];
+export function LogPage({ tasks }: { tasks: Fetched<TasksSummary> }) {
   return (
     <>
       <SiteNav page="log" />
@@ -32,31 +27,7 @@ export function LogPage({ done, names }: { done: Fetched<DoneTask[]>; names: Rec
         </Reveal>
       </section>
 
-      <LogBody names={names} doneCount={tasks.length}>
-        <Section id="done" eyebrow={`지난 작업 · ${tasks.length}개`} title={<>머지된 것만,<br />하나씩.</>}>
-          {done.ok ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {tasks.slice(0, SHOW_DONE).map((t, i) => (
-                <Reveal key={t.number} delay={(i % 3) * 0.08}>
-                  <a href={t.url} className="block h-full transition-transform hover:-translate-y-1">
-                    <Card title={t.name}>
-                      <p className="font-mono text-sm">
-                        #{t.number}
-                        {t.task && ` · 작업 ${t.task}`} · {dateText(t.mergedAt)}
-                      </p>
-                    </Card>
-                  </a>
-                </Reveal>
-              ))}
-            </div>
-          ) : (
-            <p>지난 작업을 불러오지 못했습니다 ({done.reason}) · 다음 빌드 때 다시 받습니다</p>
-          )}
-          <a href={`${REPO_URL}/pulls?q=is%3Amerged`} className="mt-10 inline-flex text-accent hover:underline">
-            GitHub 에서 모두 보기 →
-          </a>
-        </Section>
-      </LogBody>
+      <LogBody buildTasks={tasks} />
 
       <footer data-surface="dark" className="border-t border-line bg-surface px-4 py-10 text-xs text-fg-2 sm:px-8">
         <div className="mx-auto max-w-5xl">
