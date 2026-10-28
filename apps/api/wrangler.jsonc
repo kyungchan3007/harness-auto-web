@@ -1,0 +1,21 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "hav-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hav-db",
+      // 실제 id 는 사람이 `wrangler d1 create hav-db` 로 만든 뒤 넣는다 — 로컬 개발은 이 값 그대로 동작
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "drizzle/migrations"
+    }
+  ],
+  "triggers": {
+    // 수출입은행 환율은 영업일 11시 전후 갱신 → 평일 12:00 KST (03:00 UTC) 에 수집 (수집 코드는 다음 작업)
+    "crons": ["0 3 * * 1-5"]
+  },
+  "observability": { "enabled": true }
+}

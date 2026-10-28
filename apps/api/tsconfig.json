@@ -1,0 +1,8 @@
+{
+  "extends": "@hav/config/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["@cloudflare/workers-types", "node"]
+  },
+  "include": ["src", "drizzle.config.ts", "vitest.config.ts"]
+}
