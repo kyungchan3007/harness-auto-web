@@ -1,9 +1,9 @@
-// 만드는 중 페이지 — 시작 제목 → 가운데 고정 패널 ①~③ → ④ 지난 작업 → 끝 숫자 (docs/design.md "만드는 중" 페이지)
+// 만드는 중 페이지 — 시작 제목 → 가운데 고정 패널 ①~③ → ④ 작업 책상 → 끝 숫자 (docs/design.md "만드는 중" 페이지)
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
 import type { TasksSummary } from "@hav/shared/tasks";
 import { Reveal } from "@hav/ui/reveal";
-import { REPO_URL } from "./done-tasks";
+import { REPO_URL } from "./task-desks";
 import { LogBody } from "./log-body";
 
 export function LogPage({ tasks }: { tasks: Fetched<TasksSummary> }) {

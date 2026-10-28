@@ -8,7 +8,7 @@ import { useMemo, useRef } from "react";
 import { Color, type Group, type Mesh, type MeshBasicMaterial } from "three";
 import { Stage, tokenColor } from "./stage";
 
-export const MOODS = ["typing", "looking", "working", "browsing", "happy", "startled", "sad", "sleeping", "neutral"] as const;
+export const MOODS = ["typing", "looking", "working", "browsing", "happy", "startled", "sad", "sleeping", "neutral", "walking"] as const;
 export type Mood = (typeof MOODS)[number];
 export type SuitcaseProps = { mood: Mood; className?: string; label?: string };
 
@@ -72,7 +72,8 @@ function Zee({ color }: { color: Color }) {
   );
 }
 
-function Bag({ mood, animate }: { mood: Mood; animate: boolean }) {
+/** 캐릭터 몸 — 다른 장면(stations 등)에서도 씀 · 위치는 바깥 group 이 정함 */
+export function SuitcaseFigure({ mood, animate }: { mood: Mood; animate: boolean }) {
   const c = useColors();
   const root = useRef<Group>(null);
   const lid = useRef<Group>(null);
@@ -86,6 +87,8 @@ function Bag({ mood, animate }: { mood: Mood; animate: boolean }) {
   const prop = useRef<Group>(null);
   const zees = useRef<Group>(null);
   const sweat = useRef<Mesh>(null);
+  const legL = useRef<Group>(null);
+  const legR = useRef<Group>(null);
 
   useFrame(({ clock }) => {
     const t = animate ? clock.elapsedTime : STILL_T;
@@ -102,6 +105,7 @@ function Bag({ mood, animate }: { mood: Mood; animate: boolean }) {
     let eyeScale = 1;
     let look: [number, number] = [0, 0];
     let arms: [number, number, number, number] = [0.15, 0.15, 0, 0]; // 왼 z · 오른 z · 왼 x · 오른 x
+    let stride = 0; // 다리 앞뒤 (걸을 때)
     // 깜빡임 (3.2초마다 0.12초) — 자는 중 · 놀람은 빼고
     const blink = mood !== "sleeping" && mood !== "startled" && t % 3.2 < 0.12;
 
@@ -158,11 +162,22 @@ function Bag({ mood, animate }: { mood: Mood; animate: boolean }) {
         eyeOpen = 0.08;
         arms = [0.05, 0.05, 0, 0];
         break;
+      case "walking": {
+        const step = Math.sin(t * 11);
+        stride = step * 0.5;
+        y = Math.abs(step) * 0.06;
+        rotZ = step * 0.05;
+        arms = [0.2, 0.2, -step * 0.6, step * 0.6];
+        look = [0.02, 0];
+        break;
+      }
       default:
         break;
     }
 
     r.position.y = y;
+    legL.current?.rotation.set(stride, 0, 0);
+    legR.current?.rotation.set(-stride, 0, 0);
     r.rotation.set(rotX, rotY, rotZ);
     r.scale.set(1 / Math.sqrt(squash), squash, 1 / Math.sqrt(squash));
     if (lid.current) lid.current.rotation.x = -lidOpen;
@@ -262,8 +277,11 @@ function Bag({ mood, animate }: { mood: Mood; animate: boolean }) {
         ))}
 
         {/* 다리 */}
-        {[-0.27, 0.27].map((x) => (
-          <group key={x} position={[x, -0.5, 0]}>
+        {[
+          { ref: legL, x: -0.27 },
+          { ref: legR, x: 0.27 },
+        ].map(({ ref, x }) => (
+          <group key={x} ref={ref} position={[x, -0.5, 0]}>
             <mesh>
               <cylinderGeometry args={[0.06, 0.06, 0.16, 12]} />
               <meshStandardMaterial color={c.lid} roughness={0.5} />
@@ -441,7 +459,7 @@ function Scene({ mood, animate }: { mood: Mood; animate: boolean }) {
       <ambientLight intensity={0.75} />
       <directionalLight position={[2, 3, 4]} intensity={1.5} />
       <pointLight position={[-2, 1, 2]} intensity={6} color={tokenColor("--hav-aurora-3", "#ff8ad8")} />
-      <Bag mood={mood} animate={animate} />
+      <SuitcaseFigure mood={mood} animate={animate} />
     </>
   );
 }

@@ -42,4 +42,5 @@ export const MOOD_TEXT: Record<Mood, string> = {
   sad: "여행 가방이 시무룩한 중",
   sleeping: "여행 가방이 꾸벅꾸벅 조는 중",
   neutral: "여행 가방이 기다리는 중",
+  walking: "여행 가방이 다음 책상으로 걸어가는 중",
 };
