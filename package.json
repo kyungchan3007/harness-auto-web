@@ -1,30 +1,24 @@
 {
   "name": "harness-auto-web",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
+  "packageManager": "npm@10.9.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "check": "bash .agents/checks.sh",
     "spec:new": "node .agents/scripts/new-spec.mjs",
     "test:harness": "node --test .agents/scripts/harness.test.mjs"
   },
-  "version": "0.1.0",
-  "dependencies": {
-    "next": "16.4.3",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
-  },
   "devDependencies": {
-    "@types/node": "^22.20.5",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.3",
-    "typescript": "^5",
-    "vitest": "^5.0.5"
+    "turbo": "2.11.10"
   }
 }
