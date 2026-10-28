@@ -16,9 +16,11 @@ pnpm-lock.yaml
 yarn.lock
 
 # 배포 · 빌드 설정
-wrangler.toml
-next.config.*
-.env*
+**/wrangler.toml
+**/next.config.*
+**/.env*
+turbo.json
+packages/config/**
 
 # 데이터 형식 계약 (화면과 수집 스크립트가 함께 의존)
 src/data/schema.*

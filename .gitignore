@@ -6,10 +6,13 @@ node_modules/
 !.env.example
 
 # next.js (create-next-app 기본에서 가져옴)
-/.next/
-/out/
+.next/
+out/
 /coverage
 *.tsbuildinfo
 next-env.d.ts
 *.pem
 npm-debug.log*
+
+# turborepo
+.turbo

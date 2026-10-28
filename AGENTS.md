@@ -44,6 +44,6 @@ bash .agents/checks.sh         # 게이트
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+이 프로젝트는 `apps/web/next.config.ts` 의 `agentRules: false` 로 자동 기록을 껐다 — 이 블록은 손으로 관리한다 (Next.js 버전을 올리면 `node_modules/next/dist/docs/01-app/02-guides/ai-agents.md` 확인).
 
 <!-- END:nextjs-agent-rules -->
