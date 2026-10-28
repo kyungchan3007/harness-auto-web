@@ -1,6 +1,7 @@
 // Hono 앱 + 예약 실행을 한 Worker 에 (docs/architecture.md Hono 규칙)
 import { Hono } from "hono";
 import type { Env } from "./env";
+import { activityRoutes } from "./features/activity/routes";
 import { collectDay } from "./features/fx/collect";
 import { kstDate } from "./features/fx/rate";
 import { fxRoutes } from "./features/fx/routes";
@@ -20,7 +21,8 @@ export const app = new Hono<{ Bindings: Env }>()
   })
   .route("/fx", fxRoutes)
   .route("/signal", signalRoutes)
-  .route("/prices", priceRoutes);
+  .route("/prices", priceRoutes)
+  .route("/activity", activityRoutes);
 
 /** apps/web 은 hc<AppType>() 로 부른다 (Hono RPC) */
 export type AppType = typeof app;

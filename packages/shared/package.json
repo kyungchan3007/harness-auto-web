@@ -8,7 +8,8 @@
     "./fx": "./src/fx.ts",
     "./signal": "./src/signal.ts",
     "./prices": "./src/prices.ts",
-    "./errors": "./src/errors.ts"
+    "./errors": "./src/errors.ts",
+    "./activity": "./src/activity.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
