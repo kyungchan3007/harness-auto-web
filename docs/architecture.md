@@ -33,6 +33,14 @@
 - 화면은 백엔드 없이도 뜬다 — 백엔드는 로그인이 필요한 기능(알림 · 즐겨찾기)에만 (가정)
 - 브라우저는 외부 환율 API를 직접 부르지 않는다 (API 키 노출 · CORS)
 
+## 자동 배포 (2026-10-28 · 작업 0042 · 사용자 확인: "CI할때자동으로 배포될수 있게 해야지")
+| 무엇 | 언제 | 어떻게 |
+| --- | --- | --- |
+| 사이트 (Pages) | main 머지마다 · PR 마다 미리보기 | Cloudflare Pages ↔ GitHub 연결 |
+| API (Worker) | main 의 `checks` 가 통과하면 | `.github/workflows/deploy-api.yml` — D1 마이그레이션 → `wrangler deploy` → `/health` 확인 |
+| 사이트 다시 빌드 | 평일 03:30 UTC (수집 30분 뒤) | `.github/workflows/rebuild-site.yml` — Pages 배포 훅 |
+| 비밀값 | 사람이 GitHub Secrets 에 | `CLOUDFLARE_API_TOKEN` · `CLOUDFLARE_ACCOUNT_ID` · `PAGES_DEPLOY_HOOK` — 없으면 건너뜀 |
+
 ## 저장소 구조 (목표)
 ```text
 apps/

@@ -1,0 +1,22 @@
+name: rebuild-site
+# 사이트는 빌드할 때의 데이터를 보여 준다 → 평일 수집(03:00 UTC = 12:00 KST) 30분 뒤 Pages 를 다시 빌드
+# 비밀값 PAGES_DEPLOY_HOOK (Cloudflare Pages → 설정 → 배포 훅 주소)이 없으면 건너뛴다 (실패 아님)
+on:
+  schedule:
+    - cron: "30 3 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    env:
+      HOOK: ${{ secrets.PAGES_DEPLOY_HOOK }}
+    steps:
+      - name: Pages 다시 빌드
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "PAGES_DEPLOY_HOOK 이 저장소 Secrets 에 없어 건너뜁니다" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Pages 다시 빌드 요청함 ($(date -u +%FT%TZ))" >> "$GITHUB_STEP_SUMMARY"
