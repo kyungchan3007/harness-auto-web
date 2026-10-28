@@ -71,6 +71,8 @@
 
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  /* 실시간 기록 · 터미널 느낌 — 글꼴 파일을 더 받지 않고 기기 글꼴만 */
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "D2Coding", monospace;
 
   /* 참고 페이지 실측: 큰 제목 40~48px · 소제목 21px (docs/design.md) */
   --text-hero: clamp(3rem, 9vw, 7.5rem);

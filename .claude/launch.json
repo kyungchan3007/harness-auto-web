@@ -5,6 +5,11 @@
       "name": "web-static",
       "url": "http://localhost:4321",
       "port": 4321
+    },
+    {
+      "name": "web-bff",
+      "url": "http://localhost:8791",
+      "port": 8791
     }
   ]
 }
