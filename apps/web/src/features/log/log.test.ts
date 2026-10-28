@@ -2,6 +2,7 @@ import type { ActivityEvent } from "@hav/shared/activity";
 import { describe, expect, it } from "vitest";
 import { pickTasks } from "./use-tasks";
 import { MOOD_TEXT, moodOf } from "./mood";
+import { STAGES, deskState } from "./stage";
 import { MOODS } from "@hav/ui/three/suitcase";
 import { KEEP_LINES, agoText, clockText, liveStatus, mergeEvents, todayStats } from "./status";
 
@@ -93,5 +94,37 @@ describe("🧳 표정 고르기", () => {
 
   it("모든 표정에 화면 읽기용 글이 있음", () => {
     for (const m of MOODS) expect(MOOD_TEXT[m].length).toBeGreaterThan(0);
+  });
+});
+
+describe("작업 책상 단계", () => {
+  const t = (id: number, over: Partial<ActivityEvent>) => ev(id, "2026-10-28T13:00:00Z", { task: "0056", ...over });
+  const done = (task: string) => [{ number: 57, task, name: "x", url: "u", mergedAt: "2026-10-28T14:00:00.000Z" }];
+
+  it("기록이 없으면 작업 없음 · 1번 책상", () => {
+    expect(deskState([], [])).toEqual({ task: null, stage: 0, finished: false });
+  });
+
+  it("이슈 · 계획 파일만 고쳤으면 1 이슈 적기 (이슈 만들기의 GitHub 확인은 배포가 아님)", () => {
+    expect(deskState([t(2, { kind: "edit", file: "plan.md" }), t(1, { kind: "pr", label: "GitHub 확인" })], []).stage).toBe(0);
+  });
+
+  it("코드를 고치면 2 · 테스트 · 게이트 · 커밋이면 3 · PR 만듦 · 머지 · 올림이면 4", () => {
+    expect(deskState([t(1, { kind: "edit", file: "stage.ts" })], []).stage).toBe(1);
+    expect(deskState([t(2, { kind: "gate", ok: true }), t(1, { kind: "edit", file: "stage.ts" })], []).stage).toBe(2);
+    expect(deskState([t(3, { kind: "pr", label: "PR 만듦" })], []).stage).toBe(3);
+  });
+
+  it("단계는 뒤로 가지 않음 — 테스트 뒤에 다시 고쳐도 3", () => {
+    expect(deskState([t(3, { kind: "edit", file: "stage.ts" }), t(2, { kind: "test", ok: false })], []).stage).toBe(2);
+  });
+
+  it("그 작업 PR 이 머지됐으면 끝 · 다른 작업 기록은 섞지 않음", () => {
+    expect(deskState([t(1, { kind: "edit", file: "a.ts" })], done("0056"))).toEqual({ task: "0056", stage: 3, finished: true });
+    expect(deskState([t(2, { kind: "edit", file: "a.ts" }), ev(1, "2026-10-28T12:00:00Z", { task: "0054", kind: "pr", label: "PR 머지" })], []).stage).toBe(1);
+  });
+
+  it("단계마다 이름 · 아이콘", () => {
+    expect(STAGES.map((s) => s.name)).toEqual(["이슈 적기", "작업하기", "테스트", "배포"]);
   });
 });

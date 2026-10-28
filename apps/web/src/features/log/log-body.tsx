@@ -1,13 +1,13 @@
 "use client";
 
-// 만드는 중 — 가운데 고정 패널 장면 ①~③ → ④ 지난 작업 → 끝 숫자
+// 만드는 중 — 가운데 고정 패널 장면 ①~③ → ④ 작업 책상 · 다 한 일 선반 → 끝 숫자
 // 패널은 화면에 고정하고 스크롤로 장면만 바뀜 (참고 페이지 방식) · 움직임 줄이기면 장면을 차례로 쌓음
 import { CountUp } from "@hav/ui/count-up";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
 import type { TasksSummary } from "@hav/shared/tasks";
 import { useRef, useState } from "react";
 import type { Fetched } from "../../shared/api";
-import { DoneTasks } from "./done-tasks";
+import { TaskDesks } from "./task-desks";
 import { LivePanel, type Mode } from "./live-panel";
 import { MOOD_TEXT, moodOf } from "./mood";
 import { liveStatus, todayStats } from "./status";
@@ -35,7 +35,7 @@ export function LogBody({ buildTasks }: { buildTasks: Fetched<TasksSummary> }) {
   return (
     <>
       {reduce ? <StackedScenes {...props} /> : <PinnedScenes {...props} />}
-      <DoneTasks tasks={tasks} />
+      <TaskDesks activity={activity} tasks={tasks} />
       <section data-surface="elevated" className="bg-surface px-4 py-24 text-fg sm:px-8 sm:py-32">
         <div className="mx-auto grid max-w-5xl gap-12 sm:grid-cols-3">
           <Stat value={doneCount} label="머지된 작업" />
