@@ -27,7 +27,7 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
   return (
     <>
       <NavBar
-        title="tripfx"
+        title="Tripfx"
         links={[
           { href: "#today", label: "오늘 환율" },
           { href: "#currencies", label: "통화" },
