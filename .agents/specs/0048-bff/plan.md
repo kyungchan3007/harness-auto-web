@@ -29,7 +29,7 @@
 ## 완료 기준
 - [x] proxy 테스트 7개: 허용 경로만 · GET 만 · 머리글 안 넘김 · 캐시 · 실패 캐시 안 함 · 502
 - [x] 로컬 `wrangler pages dev` + 로컬 API (서비스 바인딩): 홈 200 · fx/latest · activity · signal/JPY 200 · fx/collect 404 · POST 405
-- [ ] PR 미리보기 배포에서 `/bff/fx/latest` 200
+- [x] PR 미리보기 배포에서 `/bff/fx/latest` · `/bff/activity` 200 · `/bff/fx/collect` 404 (실제 데이터)
 - [x] 홈 성능 측정값 기록 (모바일 30점 — docs/design.md · 고치는 건 다음 PR)
 - [ ] bash .agents/checks.sh PASS · CI · 머지
 
