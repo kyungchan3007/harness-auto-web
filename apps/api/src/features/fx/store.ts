@@ -1,7 +1,8 @@
 // D1 저장 — collect.ts 의 RateStore 구현
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { fetchRuns, fxRates } from "../../db/schema";
+import { runLog } from "../../db/runs";
+import { fxRates } from "../../db/schema";
 import type { RateStore } from "./collect";
 import type { RateRow } from "./rate";
 
@@ -11,13 +12,7 @@ const CHUNK = 12;
 export function d1RateStore(d1: D1Database): RateStore {
   const db = drizzle(d1);
   return {
-    async startRun(source, startedAt) {
-      const [row] = await db.insert(fetchRuns).values({ source, startedAt, status: "running" }).returning({ id: fetchRuns.id });
-      return row.id;
-    },
-    async finishRun(id, r) {
-      await db.update(fetchRuns).set(r).where(eq(fetchRuns.id, id));
-    },
+    ...runLog(db),
     async saveRates(rows: RateRow[]) {
       const official = rows.some((r) => r.source === "koreaexim");
       for (let i = 0; i < rows.length; i += CHUNK) {
