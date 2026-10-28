@@ -6,6 +6,7 @@ import { protectedHits } from "./protected-check.mjs";
 import { outOfPlan, removedAssertions } from "./scope-check.mjs";
 import { emptyTemplate } from "./spec-check.mjs";
 import { decide, isOutside, writeTargets } from "./outside-guard.mjs";
+import { englishReason, lastTurnTexts } from "./korean-gate.mjs";
 
 test("glob: ** · * · 폴더", () => {
   assert.ok(globToRegExp("src/cart/**").test("src/cart/a/b.ts"));
@@ -107,4 +108,27 @@ test("루프: LOOP 우선, 없으면 prd·sdd 있으면 full", () => {
   assert.equal(loopMode({ env: "", has: (f) => f === "sdd.md" }), "full");
   assert.equal(loopMode({ env: "full", has: () => false }), "full");
   assert.equal(loopMode({ env: "quick", has: (f) => f === "sdd.md" }), "quick");
+});
+
+// 실제 이 세션 대화 기록으로 잰 기준: 영어로 쓴 답 69개 모두 잡고 한국어 답 81개는 하나도 안 막음 (작업 0025)
+test("한국어 게이트: 영어 답은 막고, 기술 용어 섞인 한국어 답은 통과", () => {
+  assert.ok(englishReason("Now the harness files."));
+  assert.ok(englishReason("While CI runs, I'm starting the second task, **monorepo conversion**."));
+  assert.ok(englishReason("요약입니다.\n\nThe tooltip works too, the earlier screenshot was simply taken before it appeared."));
+  assert.equal(englishReason("PR #20 을 올렸습니다. Worker · D1 · Cron · Hono 를 로컬에서 확인했습니다."), null);
+  assert.equal(englishReason("`apps/api/src/index.ts` 와 [Hono Best Practices](https://hono.dev) 를 봤습니다."), null);
+  assert.equal(englishReason("```bash\nnpx wrangler deploy --dry-run --outdir dist\n```\n위 명령을 실행하세요."), null);
+});
+
+test("한국어 게이트: 마지막 사람 메시지 뒤 에이전트 글만 (도구 결과는 사람 메시지가 아님)", () => {
+  const line = (o) => JSON.stringify(o);
+  const jsonl = [
+    line({ type: "user", message: { content: "첫 질문" } }),
+    line({ type: "assistant", message: { content: [{ type: "text", text: "Old English answer that was already fixed" }] } }),
+    line({ type: "user", message: { content: "둘째 질문" } }),
+    line({ type: "assistant", message: { content: [{ type: "text", text: "확인하겠습니다." }, { type: "tool_use" }] } }),
+    line({ type: "user", message: { content: [{ type: "tool_result", content: "ok" }] } }),
+    line({ type: "assistant", message: { content: [{ type: "text", text: "Done with the check." }] } }),
+  ].join("\n");
+  assert.deepEqual(lastTurnTexts(jsonl), ["확인하겠습니다.", "Done with the check."]);
 });
