@@ -2,30 +2,7 @@
 import type { FxRate } from "@hav/shared/fx";
 import type { Signal } from "@hav/shared/signal";
 
-/** 화면에 보일 통화 한국어 이름 — API 는 코드만 준다 */
-export const CURRENCY_NAME: Record<string, string> = {
-  USD: "달러",
-  JPY: "엔화",
-  EUR: "유로",
-  CNH: "위안화",
-  CNY: "위안화",
-  GBP: "파운드",
-  THB: "바트",
-  VND: "동",
-  HKD: "홍콩 달러",
-  SGD: "싱가포르 달러",
-  AUD: "호주 달러",
-  CAD: "캐나다 달러",
-  CHF: "스위스 프랑",
-  TWD: "대만 달러",
-  IDR: "루피아",
-  MYR: "링깃",
-};
-
-/** 홈 카드 순서 — 여행 · 직구가 많은 곳부터 (응답에 있는 것만 보임) */
-export const CARD_CURRENCIES = ["JPY", "EUR", "CNH", "GBP", "THB", "VND"];
-
-export const currencyName = (code: string) => CURRENCY_NAME[code] ?? code;
+import { currencyName } from "./currencies";
 
 /** 첫 화면 큰 문장 */
 export function headline(code: string, signal: Signal | null): string {
