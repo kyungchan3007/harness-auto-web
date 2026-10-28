@@ -7,6 +7,8 @@ import { NavBar } from "@hav/ui/nav-bar";
 import { Section } from "@hav/ui/section";
 import { SignalBadge } from "@hav/ui/signal-badge";
 import { CARD_CURRENCIES, SOURCE_NAME, currencyName, headline, percentileText, rateText } from "./copy";
+import { GlobeLazy } from "../globe/globe-lazy";
+import { DESTINATIONS } from "../globe/geo";
 import { CountUp } from "./count-up";
 import { Reveal } from "./reveal";
 
@@ -39,6 +41,7 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
       />
 
       <Section id="today" eyebrow={hero ? `오늘의 환율 · ${hero.date} 기준 · ${SOURCE_NAME[hero.source]}` : "오늘의 환율"}>
+        <div className="grid items-center gap-6 lg:grid-cols-[1.05fr_1fr]">
         {hero ? (
           <Reveal>
             <h1 className="text-title font-semibold tracking-tight text-fg">{headline(HERO, heroSignal?.signal ?? null)}</h1>
@@ -54,6 +57,12 @@ export function Home({ latest, signals }: { latest: Fetched<FxLatest>; signals: 
         ) : (
           <NoData reason={problem ?? "달러 환율이 아직 수집되지 않았습니다"} />
         )}
+          {/* 🌏 호 색 = 그 나라 통화 신호 · 3D 가 안 되면 이 칸만 빔 (글자는 그대로) */}
+          <GlobeLazy
+            className="h-[320px] w-full sm:h-[420px] lg:h-[520px]"
+            arcs={DESTINATIONS.map((d) => ({ currency: d.currency ?? "", signal: bySignal.get(d.currency ?? "")?.signal ?? null }))}
+          />
+        </div>
       </Section>
 
       <Section id="currencies" surface="elevated" eyebrow="다른 통화" title={<>여행 · 직구 전에,<br />한눈에.</>}>
