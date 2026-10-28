@@ -30,3 +30,19 @@ describe("GET /fx/:currency/history 입력 검증", () => {
     expect((await app.request("/fx/US/history", {}, env())).status).toBe(400);
   });
 });
+
+describe("검사 실패 응답 모양 (ApiError 한 가지)", () => {
+  it("통화 코드 · days 가 틀리면 같은 모양의 400 + 어디가 왜 틀렸는지", async () => {
+    const { ApiError } = await import("@hav/shared/errors");
+    for (const url of ["/fx/US/history", "/fx/USD/history?days=0", "/signal/12", "/prices/levels?base=KO"]) {
+      const res = await app.request(url, {}, env());
+      expect(res.status, url).toBe(400);
+      const body = ApiError.parse(await res.json());
+      expect(body.issues?.length, url).toBeGreaterThan(0);
+    }
+  });
+  it("소문자 통화 코드도 받는다 (usd → USD)", async () => {
+    const res = await app.request("/fx/usd/history?days=1", {}, env({ DB: { prepare: () => { throw new Error("db"); } } as unknown as D1Database }));
+    expect(res.status).not.toBe(400); // 검사는 통과 · DB 는 가짜라 500
+  });
+});

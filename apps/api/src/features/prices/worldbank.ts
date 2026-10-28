@@ -7,30 +7,36 @@ export const PPP = "PA.NUS.PRVT.PP";
 export const FX = "PA.NUS.FCRF";
 export const PRICE_SOURCE = `worldbank:${PPP}/${FX}`;
 
+import { z } from "zod";
+
 export type PriceLevelRow = { country: string; year: number; level: number; source: string; fetchedAt: string };
 
-type Meta = { page: number; pages: number; total: number; message?: unknown };
-type Value = { countryiso3code: string; date: string; value: number | null };
-type Country = { id: string; region: { id: string } };
+// 응답 모양: 정상 [메타, 데이터 | null] · 오류 [{ message }] (없어진 지표가 실제로 이렇게 옴)
+const ErrorBody = z.tuple([z.looseObject({ message: z.array(z.looseObject({ value: z.string().optional() })) })]);
+const Meta = z.looseObject({ pages: z.coerce.number() });
+const Value = z.looseObject({ countryiso3code: z.string(), date: z.string(), value: z.number().nullable() });
+const Country = z.looseObject({ id: z.string(), region: z.looseObject({ id: z.string() }) });
 
-/** 세계은행 응답은 [메타, 데이터] — 오류면 [{ message }] */
-function unwrap<T>(body: unknown, what: string): T[] {
-  if (!Array.isArray(body)) throw new Error(`세계은행 ${what}: 응답이 배열이 아님`);
-  const [meta, rows] = body as [Meta & { message?: { value?: string }[] }, T[] | null];
-  if (meta?.message) throw new Error(`세계은행 ${what}: ${JSON.stringify(meta.message)}`);
-  if (meta?.pages > 1) throw new Error(`세계은행 ${what}: 한 쪽에 다 안 들어옴 (pages=${meta.pages}) — per_page 를 늘려야 함`);
+/** [메타, 데이터] 를 풀어 데이터만 — 오류 · 쪽 나뉨 · 모양 다름은 실패로 */
+function unwrap<T extends z.ZodType>(body: unknown, row: T, what: string): z.infer<T>[] {
+  const err = ErrorBody.safeParse(body);
+  if (err.success) throw new Error(`세계은행 ${what}: ${JSON.stringify(err.data[0].message)}`);
+  const ok = z.tuple([Meta, z.array(row).nullable()]).safeParse(body);
+  if (!ok.success) throw new Error(`세계은행 ${what}: 응답 모양이 다름`);
+  const [meta, rows] = ok.data;
+  if (meta.pages > 1) throw new Error(`세계은행 ${what}: 한 쪽에 다 안 들어옴 (pages=${meta.pages}) — per_page 를 늘려야 함`);
   return rows ?? [];
 }
 
 /** 나라만 (지역 · 소득 묶음 같은 집계 "Aggregates" 는 뺌) */
 export function parseCountries(body: unknown): Set<string> {
-  return new Set(unwrap<Country>(body, "country").filter((c) => c.region?.id !== "NA").map((c) => c.id));
+  return new Set(unwrap(body, Country, "country").filter((c) => c.region?.id !== "NA").map((c) => c.id));
 }
 
 /** 지표 값 → 나라 → 연도 → 값 (값이 비거나 0 이하면 버림) */
 export function parseIndicator(body: unknown): Map<string, Map<number, number>> {
   const out = new Map<string, Map<number, number>>();
-  for (const r of unwrap<Value>(body, "indicator")) {
+  for (const r of unwrap(body, Value, "indicator")) {
     if (typeof r.value !== "number" || !(r.value > 0) || !/^[A-Z]{3}$/.test(r.countryiso3code)) continue;
     const byYear = out.get(r.countryiso3code) ?? new Map<number, number>();
     byYear.set(Number(r.date), r.value);

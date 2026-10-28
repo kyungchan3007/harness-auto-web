@@ -21,12 +21,8 @@ export class SourceError extends Error {
   }
 }
 
-/** YYYY-MM-DD 인지 (달력상 있는 날만) */
-export function isIsoDate(s: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const d = new Date(`${s}T00:00:00Z`);
-  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
-}
+/** 날짜 검사의 원본은 @hav/shared/date */
+export { isIsoDate } from "@hav/shared/date";
 
 /** 한국 날짜 (KST = UTC+9) */
 export function kstDate(now: Date = new Date()): string {

@@ -21,6 +21,7 @@
     "wrangler": "^4.154.0"
   },
   "dependencies": {
+    "@hav/shared": "^0.0.0",
     "@hono/zod-validator": "^0.9.1",
     "drizzle-orm": "^0.45.4",
     "hono": "^4.13.14",

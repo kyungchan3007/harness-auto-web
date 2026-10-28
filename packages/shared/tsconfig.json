@@ -1,0 +1,5 @@
+{
+  "extends": "@hav/config/tsconfig/base.json",
+  "compilerOptions": { "lib": ["esnext"] },
+  "include": ["src"]
+}

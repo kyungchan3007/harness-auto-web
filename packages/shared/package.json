@@ -1,0 +1,25 @@
+{
+  "name": "@hav/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./date": "./src/date.ts",
+    "./fx": "./src/fx.ts",
+    "./signal": "./src/signal.ts",
+    "./prices": "./src/prices.ts",
+    "./errors": "./src/errors.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@hav/config": "*",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}
