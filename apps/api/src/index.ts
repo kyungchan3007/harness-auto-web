@@ -16,7 +16,7 @@ export const app = new Hono<{ Bindings: Env }>()
       .first<{ ok: number }>()
       .then((r) => r?.ok === 1)
       .catch(() => false);
-    return c.json({ ok: db, service: "hav-api", db }, db ? 200 : 503);
+    return c.json({ ok: db, service: "tripfx-api", db }, db ? 200 : 503);
   })
   .route("/fx", fxRoutes)
   .route("/signal", signalRoutes)

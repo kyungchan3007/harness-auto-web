@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "hav-api",
+  // 배포 주소: tripfx-api.developfff.workers.dev (2026-10-28 사용자 결정)
+  "name": "tripfx-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-20",
   "compatibility_flags": ["nodejs_compat"],
