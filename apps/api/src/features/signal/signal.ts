@@ -1,10 +1,9 @@
 // 지금 살 때인가 — 최근 90일 안에서 오늘 값의 위치 (예측 아님 · SIG-01)
 //   백분위 = 최근 90일 중 오늘보다 낮았던 날의 비율 · 아래 30% 싼 편 · 위 30% 비싼 편 (사용자 확인: "전부 추천대로")
 
-export type Signal = "cheap" | "normal" | "expensive";
-export type Point = { date: string; value: number }; // value = 1 외화당 원 (baseRate / unit)
+import type { Point, Signal, SignalResult, SignalRule } from "@hav/shared/signal";
 
-export type SignalRule = { windowDays: number; cheapAt: number; expensiveAt: number; minCoverage: number };
+export type { Point, Signal, SignalResult, SignalRule }; // 모양의 원본은 @hav/shared/signal
 
 export const SIGNAL_RULE: SignalRule = {
   windowDays: 90,
@@ -14,16 +13,6 @@ export const SIGNAL_RULE: SignalRule = {
 };
 
 export const SIGNAL_METHOD = "최근 90일 중 오늘보다 낮았던 날의 비율 · 30% 이하 싼 편 · 70% 이상 비싼 편 · 예측 아님";
-
-export type SignalResult = {
-  signal: Signal | null;
-  reason: "ok" | "no-data" | "data-short";
-  percentile: number | null; // 0 ~ 1
-  latest: Point | null;
-  window: { from: string; to: string; count: number; expected: number } | null;
-  range: { min: number; max: number } | null;
-  method: string;
-};
 
 const DAY = 86400_000;
 const day = (s: string) => Date.parse(`${s}T00:00:00Z`);

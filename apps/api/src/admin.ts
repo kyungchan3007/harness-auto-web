@@ -1,5 +1,6 @@
 // 관리용 API 확인 — ADMIN_TOKEN 이 없으면 경로가 없는 것처럼(404) · 있으면 Bearer 토큰
 import type { Context } from "hono";
+import type { ApiError } from "@hav/shared/errors";
 import type { Env } from "./env";
 
 /** 길이와 상관없이 같은 시간이 걸리는 비교 (토큰 추측 방지) */
@@ -15,6 +16,9 @@ export function sameToken(a: string, b: string): boolean {
 export function adminGuard(c: Context<{ Bindings: Env }>): Response | null {
   const token = c.env.ADMIN_TOKEN;
   if (!token) return c.notFound() as Response;
-  if (!sameToken(c.req.header("authorization") ?? "", `Bearer ${token}`)) return c.json({ error: "인증 실패" }, 401);
+  if (!sameToken(c.req.header("authorization") ?? "", `Bearer ${token}`)) {
+    const body: ApiError = { error: "인증 실패" };
+    return c.json(body, 401);
+  }
   return null;
 }
