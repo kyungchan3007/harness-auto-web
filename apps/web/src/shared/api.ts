@@ -8,7 +8,7 @@ export const DEFAULT_API = "https://tripfx-api.developfff.workers.dev";
 
 export type Fetched<T> = { ok: true; data: T } | { ok: false; reason: string };
 
-export type ApiOptions = { base?: string; fetcher?: typeof fetch; timeoutMs?: number };
+export type ApiOptions = { base?: string; fetcher?: typeof fetch; timeoutMs?: number; headers?: Record<string, string> };
 
 const apiBase = (base?: string) => (base ?? process.env.TRIPFX_API_URL ?? DEFAULT_API).replace(/\/$/, "");
 
@@ -16,7 +16,7 @@ const apiBase = (base?: string) => (base ?? process.env.TRIPFX_API_URL ?? DEFAUL
 export async function getJson<T extends z.ZodType>(path: string, schema: T, opts: ApiOptions = {}): Promise<Fetched<z.infer<T>>> {
   const url = `${apiBase(opts.base)}${path}`;
   try {
-    const res = await (opts.fetcher ?? fetch)(url, { signal: AbortSignal.timeout(opts.timeoutMs ?? 10_000) });
+    const res = await (opts.fetcher ?? fetch)(url, { headers: opts.headers, signal: AbortSignal.timeout(opts.timeoutMs ?? 10_000) });
     if (!res.ok) return { ok: false, reason: `HTTP ${res.status}` };
     const parsed = schema.safeParse(await res.json());
     if (!parsed.success) return { ok: false, reason: `응답 모양이 다름: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}` };

@@ -5,6 +5,13 @@ import { z } from "zod";
 export const REPO = "kyungchan3007/harness-auto-web";
 export const REPO_URL = `https://github.com/${REPO}`;
 const GITHUB = "https://api.github.com";
+// GitHub 은 User-Agent 를 요구 · Pages 빌드에서 10초 안에 못 받은 적이 있어 20초 + 한 번 더
+const OPTS = { base: GITHUB, timeoutMs: 20_000, headers: { "user-agent": "tripfx-build", accept: "application/vnd.github+json" } };
+
+async function getGithub<T extends z.ZodType>(path: string, schema: T, fetcher?: typeof fetch) {
+  const first = await getJson(path, schema, { ...OPTS, fetcher });
+  return first.ok ? first : getJson(path, schema, { ...OPTS, fetcher });
+}
 
 /** "[0046] 실시간 작업 기록 …" → { task: "0046", name: "실시간 작업 기록 …" } */
 export function splitTitle(title: string): { task: string | null; name: string } {
@@ -37,11 +44,11 @@ export function toTaskNames(issues: z.infer<typeof Issue>[]): Record<string, str
 }
 
 export async function fetchDoneTasks(fetcher?: typeof fetch): Promise<Fetched<DoneTask[]>> {
-  const r = await getJson(`/repos/${REPO}/pulls?state=closed&per_page=100`, z.array(Pull), { base: GITHUB, fetcher });
+  const r = await getGithub(`/repos/${REPO}/pulls?state=closed&per_page=100`, z.array(Pull), fetcher);
   return r.ok ? { ok: true, data: toDoneTasks(r.data) } : r;
 }
 
 export async function fetchTaskNames(fetcher?: typeof fetch): Promise<Fetched<Record<string, string>>> {
-  const r = await getJson(`/repos/${REPO}/issues?state=all&per_page=100`, z.array(Issue), { base: GITHUB, fetcher });
+  const r = await getGithub(`/repos/${REPO}/issues?state=all&per_page=100`, z.array(Issue), fetcher);
   return r.ok ? { ok: true, data: toTaskNames(r.data) } : r;
 }

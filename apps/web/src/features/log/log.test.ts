@@ -69,8 +69,16 @@ describe("GitHub 응답 읽기", () => {
     expect(toTaskNames([{ number: 50, title: "[0050] 만드는 중 페이지" }, { number: 51, title: "[0050] PR 제목", pull_request: {} }])).toEqual({ "0050": "만드는 중 페이지" });
   });
 
-  it("GitHub 이 실패하면 이유만 (빌드는 계속)", async () => {
-    const r = await fetchDoneTasks((async () => new Response("rate limited", { status: 403 })) as typeof fetch);
+  it("GitHub 이 실패하면 한 번 더 · 그래도 실패면 이유만 (빌드는 계속)", async () => {
+    let calls = 0;
+    const r = await fetchDoneTasks((async () => (calls++, new Response("rate limited", { status: 403 }))) as typeof fetch);
     expect(r).toEqual({ ok: false, reason: "HTTP 403" });
+    expect(calls).toBe(2);
+  });
+
+  it("User-Agent 를 보냄 (GitHub 이 요구)", async () => {
+    let ua: string | null = null;
+    await fetchDoneTasks((async (_: unknown, init?: RequestInit) => ((ua = new Headers(init?.headers).get("user-agent")), Response.json([]))) as typeof fetch);
+    expect(ua).toBe("tripfx-build");
   });
 });
