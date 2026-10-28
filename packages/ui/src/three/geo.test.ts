@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DESTINATIONS, SEOUL, angleBetween, arcPoints, faceRotationY, toVec3 } from "./geo";
+import { type Place, angleBetween, arcPoints, faceRotationY, toVec3 } from "./geo";
+
+// 홈이 실제로 쓰는 곳과 같은 값 (apps/web/src/features/home/places.ts)
+const SEOUL: Place = { id: "seoul", name: "서울", lat: 37.57, lng: 126.98 };
+const DESTINATIONS: Place[] = [
+  { id: "tokyo", name: "도쿄", lat: 35.68, lng: 139.69, currency: "JPY" },
+  { id: "newyork", name: "뉴욕", lat: 40.71, lng: -74.01, currency: "USD" },
+  { id: "paris", name: "파리", lat: 48.86, lng: 2.35, currency: "EUR" },
+  { id: "bangkok", name: "방콕", lat: 13.75, lng: 100.5, currency: "THB" },
+];
 
 const len = (v: number[]) => Math.hypot(...v);
 

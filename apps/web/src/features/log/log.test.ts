@@ -1,6 +1,8 @@
 import type { ActivityEvent } from "@hav/shared/activity";
 import { describe, expect, it } from "vitest";
 import { pickTasks } from "./use-tasks";
+import { MOOD_TEXT, moodOf } from "./mood";
+import { MOODS } from "@hav/ui/three/suitcase";
 import { KEEP_LINES, agoText, clockText, liveStatus, mergeEvents, todayStats } from "./status";
 
 const ev = (id: number, at: string, over: Partial<ActivityEvent> = {}): ActivityEvent => ({ id, at, kind: "edit", label: "코드 수정", file: null, ok: null, task: null, ...over });
@@ -62,5 +64,34 @@ describe("지난 작업 고르기", () => {
 
   it("둘 다 실패면 빌드 때 이유", () => {
     expect(pickTasks({ ok: false, reason: "HTTP 503" }, { ok: false, reason: "연결 실패" })).toEqual({ ok: false, reason: "HTTP 503" });
+  });
+});
+
+describe("🧳 표정 고르기", () => {
+  const at = "2026-10-28T13:59:00Z"; // NOW 1분 전 → 작업 중
+  const mood = (over: Partial<ActivityEvent>) => moodOf(liveStatus([ev(1, at, over)], NOW));
+
+  it("하는 일에 따라: 수정=키보드 · 읽기/찾기=돋보기 · 브라우저=화면 · 막힘=화들짝", () => {
+    expect([mood({ kind: "edit" }), mood({ kind: "read" }), mood({ kind: "search" }), mood({ kind: "browser" }), mood({ kind: "blocked", ok: false })]).toEqual([
+      "typing",
+      "looking",
+      "looking",
+      "browsing",
+      "startled",
+    ]);
+  });
+
+  it("게이트 · 테스트는 결과에 따라: 통과=폴짝 · 실패=시무룩 · 모름=톱니", () => {
+    expect([mood({ kind: "gate", ok: true }), mood({ kind: "gate", ok: false }), mood({ kind: "gate", ok: null })]).toEqual(["happy", "sad", "working"]);
+    expect([mood({ kind: "test", ok: false }), mood({ kind: "test", ok: null }), mood({ kind: "build" })]).toEqual(["sad", "working", "working"]);
+  });
+
+  it("10분 넘게 조용하면 꾸벅 · 기록이 없으면 기다림", () => {
+    expect(moodOf(liveStatus([ev(1, "2026-10-28T12:00:00Z", { kind: "edit" })], NOW))).toBe("sleeping");
+    expect(moodOf(liveStatus([], NOW))).toBe("neutral");
+  });
+
+  it("모든 표정에 화면 읽기용 글이 있음", () => {
+    for (const m of MOODS) expect(MOOD_TEXT[m].length).toBeGreaterThan(0);
   });
 });

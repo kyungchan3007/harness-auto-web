@@ -9,7 +9,10 @@ import { useRef, useState } from "react";
 import type { Fetched } from "../../shared/api";
 import { DoneTasks } from "./done-tasks";
 import { LivePanel, type Mode } from "./live-panel";
-import { todayStats } from "./status";
+import { MOOD_TEXT, moodOf } from "./mood";
+import { liveStatus, todayStats } from "./status";
+import { SuitcaseLazy } from "../../shared/three-lazy";
+import type { Mood } from "@hav/ui/three/suitcase";
 import { type Activity, useActivity } from "./use-activity";
 import { useTasks } from "./use-tasks";
 
@@ -26,10 +29,12 @@ export function LogBody({ buildTasks }: { buildTasks: Fetched<TasksSummary> }) {
   const doneCount = tasks.ok ? tasks.data.done.length : 0;
   const stats = todayStats(activity.events, activity.now);
   const reduce = useReducedMotion();
+  const mood = moodOf(liveStatus(activity.events, activity.now));
+  const props = { activity, names, blocked: stats.blocked, mood };
 
   return (
     <>
-      {reduce ? <StackedScenes activity={activity} names={names} blocked={stats.blocked} /> : <PinnedScenes activity={activity} names={names} blocked={stats.blocked} />}
+      {reduce ? <StackedScenes {...props} /> : <PinnedScenes {...props} />}
       <DoneTasks tasks={tasks} />
       <section data-surface="elevated" className="bg-surface px-4 py-24 text-fg sm:px-8 sm:py-32">
         <div className="mx-auto grid max-w-5xl gap-12 sm:grid-cols-3">
@@ -62,9 +67,20 @@ function Caption({ i, blocked }: { i: number; blocked: number }) {
   );
 }
 
-type Props = { activity: Activity; names: Record<string, string>; blocked: number };
+type Props = { activity: Activity; names: Record<string, string>; blocked: number; mood: Mood };
 
-function PinnedScenes({ activity, names, blocked }: Props) {
+/** 🧳 패널에 걸터앉은 캐릭터 — 넓은 화면은 패널 오른쪽 옆 · 휴대폰은 패널 오른쪽 위 모서리 */
+function Buddy({ mood }: { mood: Mood }) {
+  return (
+    <SuitcaseLazy
+      mood={mood}
+      label={MOOD_TEXT[mood]}
+      className="pointer-events-none absolute -top-24 -right-2 z-10 size-28 sm:-top-32 sm:size-36 xl:top-auto xl:-right-56 xl:bottom-0 xl:size-56"
+    />
+  );
+}
+
+function PinnedScenes({ activity, names, blocked, mood }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   // 작게 → 크게 (①) · 끝에서 살짝 물러남 (지난 작업으로 넘어감)
@@ -83,7 +99,8 @@ function PinnedScenes({ activity, names, blocked }: Props) {
             </motion.div>
           </AnimatePresence>
         </div>
-        <motion.div style={{ scale, opacity }} className="mx-auto w-full max-w-3xl">
+        <motion.div style={{ scale, opacity }} className="relative mx-auto w-full max-w-3xl">
+          <Buddy mood={mood} />
           <LivePanel activity={activity} names={names} mode={SCENES[scene].mode} />
         </motion.div>
         <SceneDots scene={scene} />
@@ -102,13 +119,16 @@ function SceneDots({ scene }: { scene: number }) {
   );
 }
 
-function StackedScenes({ activity, names, blocked }: Props) {
+function StackedScenes({ activity, names, blocked, mood }: Props) {
   return (
     <div data-surface="dark" className="space-y-24 bg-surface px-4 py-24 text-fg sm:px-8">
       {SCENES.map((s, i) => (
         <div key={s.mode} className="mx-auto max-w-3xl space-y-8">
           <Caption i={i} blocked={blocked} />
-          <LivePanel activity={activity} names={names} mode={s.mode} />
+          <div className="relative">
+            {i === 0 && <Buddy mood={mood} />}
+            <LivePanel activity={activity} names={names} mode={s.mode} />
+          </div>
         </div>
       ))}
     </div>

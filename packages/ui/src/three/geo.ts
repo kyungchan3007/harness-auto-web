@@ -1,18 +1,9 @@
-// 지구본 계산 — 위경도 → 3D 좌표 · 대권(가장 짧은 길) 호 · 처음에 한국이 앞을 보게 돌리는 각도 (three 없이 순수 함수)
+// 지구본 계산 — 위경도 → 3D 좌표 · 대권(가장 짧은 길) 호 · 처음에 어떤 곳이 앞을 보게 돌리는 각도 (three 없이 순수 함수)
+// 어느 나라 · 도시를 그릴지는 쓰는 쪽(앱)이 정함
 
 export type Vec3 = [number, number, number];
 
 export type Place = { id: string; name: string; lat: number; lng: number; currency?: string };
-
-export const SEOUL: Place = { id: "seoul", name: "서울", lat: 37.57, lng: 126.98 };
-
-/** 여행지 — 홈 흐름 "일본 · 미국 · 유럽 · 태국" (docs/design.md) */
-export const DESTINATIONS: Place[] = [
-  { id: "tokyo", name: "도쿄", lat: 35.68, lng: 139.69, currency: "JPY" },
-  { id: "newyork", name: "뉴욕", lat: 40.71, lng: -74.01, currency: "USD" },
-  { id: "paris", name: "파리", lat: 48.86, lng: 2.35, currency: "EUR" },
-  { id: "bangkok", name: "방콕", lat: 13.75, lng: 100.5, currency: "THB" },
-];
 
 const RAD = Math.PI / 180;
 
