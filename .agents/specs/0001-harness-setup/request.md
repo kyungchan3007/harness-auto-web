@@ -10,5 +10,11 @@
 ## 2026-10-28 사용자 답 (질문 "템플릿 원본용 파일(CHANGELOG · CONTRIBUTING · 원본 토론으로 연결된 이슈 폼 설정)은 어떻게 할까요?")
 이 프로젝트에 맞게 (추천)
 
+## 2026-10-28 사용자 (채팅, 추가 요청)
+일단 깃허브 저장소 부터 만들어야해 그리고 리드미도 만들어야 하고 리드미도 좀 꾸며야하고
+
+## 2026-10-28 사용자 답 (저장소 · README 질문)
+저장소: harness-auto-web · 공개 / README 스타일: 템플릿 README처럼 / README 내용: 에이전트가 만든다는 이야기, 기능 소개, 개발 · 기여 방법
+
 ## HANDOFF.md 2단계 (원문)
 하네스를 프로젝트에 맞추기: AGENTS.md 소개 · `checks.sh`에 typecheck · lint · test · build · e2e 연결 · `protected.txt`에 배포 설정 · lock 파일 · `docs/domain/`에 페이지별 요구
