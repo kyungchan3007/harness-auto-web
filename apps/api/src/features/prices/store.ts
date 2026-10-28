@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { runLog } from "../../db/runs";
 import { priceLevels } from "../../db/schema";
 import type { PriceStore } from "./collect";
+import { isPlausibleLevel } from "./worldbank";
 
 // D1 바인딩 100개 제한 → 5칸 × 20줄
 const CHUNK = 20;
@@ -39,7 +40,7 @@ export async function relativeLevels(d1: D1Database, base: string) {
   const latest = new Map<string, { country: string; year: number; level: number; relative: number; source: string }>();
   for (const r of all) {
     const b = baseByYear.get(r.year);
-    if (!b) continue;
+    if (!b || !isPlausibleLevel(r.level)) continue; // 이미 저장된 이상한 값도 읽을 때 뺌
     const cur = latest.get(r.country);
     if (cur && cur.year >= r.year) continue;
     latest.set(r.country, { country: r.country, year: r.year, level: r.level, relative: Math.round((r.level / b) * 1000) / 1000, source: r.source });
