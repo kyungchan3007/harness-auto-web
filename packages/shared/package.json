@@ -10,7 +10,8 @@
     "./prices": "./src/prices.ts",
     "./errors": "./src/errors.ts",
     "./activity": "./src/activity.ts",
-    "./tasks": "./src/tasks.ts"
+    "./tasks": "./src/tasks.ts",
+    "./currency": "./src/currency.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

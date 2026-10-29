@@ -1,5 +1,5 @@
 // API 받기 — 빌드 때 부르고 @hav/shared 스키마로 검사 · 실패해도 던지지 않고 이유를 돌려준다 (빌드가 깨지지 않게)
-import { FxLatest } from "@hav/shared/fx";
+import { FxHistory, FxLatest } from "@hav/shared/fx";
 import { PriceLevels } from "@hav/shared/prices";
 import { CurrencySignal, SignalList } from "@hav/shared/signal";
 import { TasksSummary } from "@hav/shared/tasks";
@@ -30,6 +30,7 @@ export async function getJson<T extends z.ZodType>(path: string, schema: T, opts
 
 export const api = {
   latest: (o?: ApiOptions) => getJson("/fx/latest", FxLatest, o),
+  history: (currency: string, days: number, o?: ApiOptions) => getJson(`/fx/${encodeURIComponent(currency)}/history?days=${days}`, FxHistory, o),
   signals: (o?: ApiOptions) => getJson("/signal", SignalList, o),
   signal: (currency: string, o?: ApiOptions) => getJson(`/signal/${encodeURIComponent(currency)}`, CurrencySignal, o),
   priceLevels: (o?: ApiOptions) => getJson("/prices/levels?base=KOR", PriceLevels, o),
