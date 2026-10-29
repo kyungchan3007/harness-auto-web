@@ -63,6 +63,10 @@ test("밖 쓰기: 프로젝트 안 · /dev 는 허용, 밖은 차단", () => {
   assert.ok(isOutside("/tmp/log", root));
   assert.ok(isOutside("../other/x", root));
   assert.ok(isOutside("~/x", root));
+  // heredoc 본문 속 글자는 쓰기 대상이 아님 · 첫 줄의 리다이렉션은 그대로 검사
+  assert.equal(decide({ tool_name: "Bash", tool_input: { command: "cat > .tmp/p.md <<'EOF'\n주석 <경로>/memory · a >/etc/x\nEOF\nls" } }, root), null);
+  assert.ok(decide({ tool_name: "Bash", tool_input: { command: "cat > /tmp/p.md <<'EOF'\n안전\nEOF" } }, root));
+  assert.ok(decide({ tool_name: "Bash", tool_input: { command: "cat <<EOF\nx\nEOF\necho hi > /tmp/after" } }, root));
   // 이 프로젝트의 기억 폴더만 예외 · 다른 프로젝트 기억 · 그 위 폴더는 계속 막음
   assert.ok(!isOutside("~/.claude/projects/-work-app/memory/a.md", root));
   assert.ok(isOutside("~/.claude/projects/-work-other/memory/a.md", root));
