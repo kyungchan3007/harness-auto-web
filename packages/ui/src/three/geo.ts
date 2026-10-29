@@ -46,6 +46,20 @@ export function arcPoints(from: Place, to: Place, opts: { r?: number; segments?:
   return pts;
 }
 
+/** 두 곳의 대권 가운데 (위경도) — 지구본이 출발지 · 도착지 호가 다 보이게 이곳을 앞에 둠 · 정반대 두 점은 a 를 돌려줌 */
+export function midpoint(a: Pick<Place, "lat" | "lng">, b: Pick<Place, "lat" | "lng">): { lat: number; lng: number } {
+  const va = toVec3(a.lat, a.lng);
+  const vb = toVec3(b.lat, b.lng);
+  const sum: Vec3 = [va[0] + vb[0], va[1] + vb[1], va[2] + vb[2]];
+  const l = len(sum);
+  if (l < 1e-9) return { lat: a.lat, lng: a.lng };
+  const m = scale(sum, 1 / l);
+  // toVec3 의 반대 계산
+  const lat = 90 - Math.acos(m[1]) / RAD;
+  const lng = Math.atan2(m[2], -m[0]) / RAD - 180;
+  return { lat, lng: ((lng + 540) % 360) - 180 };
+}
+
 /** 처음 화면에서 이 장소가 카메라(+z) 쪽을 보게 하는 y 축 회전 각 */
 export function faceRotationY(place: Pick<Place, "lat" | "lng">): number {
   const [x, , z] = toVec3(place.lat, place.lng);

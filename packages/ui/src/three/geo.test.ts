@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Place, angleBetween, arcPoints, faceRotationY, toVec3 } from "./geo";
+import { type Place, angleBetween, arcPoints, faceRotationY, midpoint, toVec3 } from "./geo";
 
 // 홈이 실제로 쓰는 곳과 같은 값 (apps/web/src/features/home/places.ts)
 const SEOUL: Place = { id: "seoul", name: "서울", lat: 37.57, lng: 126.98 };
@@ -50,6 +50,25 @@ describe("대권 호", () => {
     const km = angleBetween(toVec3(SEOUL.lat, SEOUL.lng), toVec3(tokyo.lat, tokyo.lng)) * 6371;
     expect(km).toBeGreaterThan(1100);
     expect(km).toBeLessThan(1250);
+  });
+});
+
+describe("두 곳의 가운데", () => {
+  it("적도 위 두 점 → 경도 가운데 · 날짜 변경선을 넘어도", () => {
+    const m = midpoint({ lat: 0, lng: 10 }, { lat: 0, lng: 50 });
+    expect(m.lat).toBeCloseTo(0, 6);
+    expect(m.lng).toBeCloseTo(30, 6);
+    expect(Math.abs(midpoint({ lat: 0, lng: 170 }, { lat: 0, lng: -170 }).lng)).toBeCloseTo(180, 6); // 180 = -180
+  });
+
+  it("가운데는 두 곳에서 같은 거리 · 같은 위경도면 그 자리", () => {
+    const seoul = { lat: 37.57, lng: 126.98 };
+    const ny = { lat: 40.71, lng: -74.01 };
+    const m = midpoint(seoul, ny);
+    const v = toVec3(m.lat, m.lng);
+    expect(angleBetween(v, toVec3(seoul.lat, seoul.lng))).toBeCloseTo(angleBetween(v, toVec3(ny.lat, ny.lng)), 6);
+    expect(midpoint(seoul, seoul).lat).toBeCloseTo(seoul.lat, 6);
+    expect(midpoint(seoul, seoul).lng).toBeCloseTo(seoul.lng, 6);
   });
 });
 

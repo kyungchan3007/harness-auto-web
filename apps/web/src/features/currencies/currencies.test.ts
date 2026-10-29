@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chartOf } from "./chart";
+import { chartOf } from "../../shared/chart";
 
 describe("1년 흐름 그래프 좌표", () => {
   it("첫날은 왼쪽 · 마지막 날은 오른쪽 · 최고는 위 · 최저는 아래", () => {
