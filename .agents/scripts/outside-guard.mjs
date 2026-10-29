@@ -27,7 +27,11 @@ export function isOutside(path, root, cwd = root) {
 }
 
 /** Bash 명령에서 쓰기 대상 경로를 뽑는다: 리다이렉션 · tee · cp/mv/mkdir/touch/rm/ln 인자 */
-export function writeTargets(command) {
+/** heredoc 본문(글자)은 명령이 아니라서 뺀다 — 본문 속 `>/경로` 를 쓰기로 읽어 두 번 막혔음 (작업 0068 · 0069) · 첫 줄(`cat > f <<EOF`)은 남김 */
+const stripHeredocs = (command) => command.replace(/(<<-?\s*(["']?)(\w+)\2[^\n]*)\n[\s\S]*?\n[ \t]*\3[ \t]*(?=\n|$)/g, "$1");
+
+export function writeTargets(raw) {
+  const command = stripHeredocs(raw);
   const targets = [];
   for (const m of command.matchAll(/(?:^|[^0-9&<])>>?\s*([^\s|;&<>]+)/g)) targets.push(m[1]);
   for (const part of command.split(/&&|\|\||;|\||\n/)) {
