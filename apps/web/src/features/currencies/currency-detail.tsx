@@ -6,7 +6,7 @@ import type { CurrencySignal } from "@hav/shared/signal";
 import { TRAVEL_COUNTRIES, countriesOf } from "@hav/shared/travel";
 import { SignalBadge } from "@hav/ui/signal-badge";
 import { CurrencyFlag } from "@/shared/currency-flag";
-import { YearChart } from "./year-chart";
+import { YearChart } from "@/shared/year-chart";
 
 export type DetailData = { code: string; rate: FxRate | null; signal: Fetched<CurrencySignal>; history: Fetched<FxHistory>; problem: string | null };
 
