@@ -1,6 +1,6 @@
 "use client";
 
-// ④ 작업 책상 — 이슈 적기 → 작업하기 → 테스트 → 배포 책상 · 🧳 캐릭터가 지금 단계 책상으로 걸어감 · 끝난 작업은 선반에
+// ④ 작업 책상 — 이슈 적기 → 작업하기 → 테스트 → 배포 책상 · 🐱 작업 고양이가 지금 단계 책상으로 걸어감 · 끝난 작업은 선반에
 // 단계는 실제 기록으로만 (stage.ts) · 3D 장면은 디자인 시스템(@hav/ui/three/stations)
 import type { TasksSummary } from "@hav/shared/tasks";
 import { Section } from "@hav/ui/section";

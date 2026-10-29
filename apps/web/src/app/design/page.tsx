@@ -7,6 +7,7 @@ import { SignalBadge } from "@hav/ui/signal-badge";
 import { Tabs } from "@hav/ui/tabs";
 import { Tooltip } from "@hav/ui/tooltip";
 import type { Metadata } from "next";
+import { Characters } from "./characters";
 
 export const metadata: Metadata = { title: "디자인 시스템 · Tripfx" };
 
@@ -21,6 +22,7 @@ export default function DesignPage() {
           { href: "#cards", label: "카드" },
           { href: "#tabs", label: "탭" },
           { href: "#light", label: "밝은 섹션" },
+          { href: "#characters", label: "캐릭터" },
         ]}
         action={<Button>바로 계산</Button>}
       />
@@ -73,6 +75,9 @@ export default function DesignPage() {
           <SignalBadge signal="expensive" />
           <Button>바로 계산</Button>
         </div>
+      </Section>
+      <Section id="characters" eyebrow="3D 캐릭터" title="렉돌 고양이 두 마리.">
+        <Characters />
       </Section>
     </>
   );

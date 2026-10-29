@@ -11,8 +11,8 @@ import { TaskDesks } from "./task-desks";
 import { LivePanel, type Mode } from "./live-panel";
 import { MOOD_TEXT, moodOf } from "./mood";
 import { liveStatus, todayStats } from "./status";
-import { SuitcaseLazy } from "../../shared/three-lazy";
-import type { Mood } from "@hav/ui/three/suitcase";
+import { WorkerCatLazy } from "../../shared/three-lazy";
+import type { Mood } from "@hav/ui/three/worker-cat";
 import { type Activity, useActivity } from "./use-activity";
 import { useTasks } from "./use-tasks";
 
@@ -69,10 +69,10 @@ function Caption({ i, blocked }: { i: number; blocked: number }) {
 
 type Props = { activity: Activity; names: Record<string, string>; blocked: number; mood: Mood };
 
-/** 🧳 패널에 걸터앉은 캐릭터 — 넓은 화면은 패널 오른쪽 옆 · 휴대폰은 패널 오른쪽 위 모서리 */
+/** 🐱 패널에 걸터앉은 작업 고양이 — 넓은 화면은 패널 오른쪽 옆 · 휴대폰은 패널 오른쪽 위 모서리 */
 function Buddy({ mood }: { mood: Mood }) {
   return (
-    <SuitcaseLazy
+    <WorkerCatLazy
       mood={mood}
       label={MOOD_TEXT[mood]}
       className="pointer-events-none absolute -top-24 -right-2 z-10 size-28 sm:-top-32 sm:size-36 xl:top-auto xl:-right-56 xl:bottom-0 xl:size-56"

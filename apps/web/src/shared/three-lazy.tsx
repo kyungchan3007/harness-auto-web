@@ -5,12 +5,12 @@
 import { lazyNear } from "@hav/ui/lazy-near";
 import type { CoinProps } from "@hav/ui/three/coin";
 import type { GlobeProps } from "@hav/ui/three/globe";
-import type { PiggyProps } from "@hav/ui/three/piggy";
+import type { MoneyCatProps } from "@hav/ui/three/money-cat";
 import type { StationsProps } from "@hav/ui/three/stations";
-import type { SuitcaseProps } from "@hav/ui/three/suitcase";
+import type { WorkerCatProps } from "@hav/ui/three/worker-cat";
 
 export const GlobeLazy = lazyNear<GlobeProps>(() => import("@hav/ui/three/globe"));
-export const SuitcaseLazy = lazyNear<SuitcaseProps>(() => import("@hav/ui/three/suitcase"));
+export const WorkerCatLazy = lazyNear<WorkerCatProps>(() => import("@hav/ui/three/worker-cat"));
 export const StationsLazy = lazyNear<StationsProps>(() => import("@hav/ui/three/stations"));
 export const CoinLazy = lazyNear<CoinProps>(() => import("@hav/ui/three/coin"));
-export const PiggyLazy = lazyNear<PiggyProps>(() => import("@hav/ui/three/piggy"));
+export const MoneyCatLazy = lazyNear<MoneyCatProps>(() => import("@hav/ui/three/money-cat"));

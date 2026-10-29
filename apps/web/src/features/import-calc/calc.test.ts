@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calc, parseAmount, piggyMood } from "./calc";
+import { calc, catMood, parseAmount } from "./calc";
 import { DUTY_FREE_USD, RULES_SOURCE } from "./rules";
 
 const RATES = { USD: { baseRate: 1400, unit: 1 }, JPY: { baseRate: 900, unit: 100 }, EUR: { baseRate: 1500, unit: 1 } };
@@ -77,11 +77,11 @@ describe("틀린 입력은 계산하지 않고 이유 (IMP-05)", () => {
   });
 });
 
-describe("🐷 표정", () => {
+describe("💰 돈 든 고양이 표정", () => {
   it("입력 전 보통 · 한도 안 웃음 · 80% 넘으면 걱정 · 넘으면 시무룩", () => {
-    expect(piggyMood(null)).toBe("neutral");
-    expect(piggyMood(calc({ ...base, price: "100" }, RATES))).toBe("happy");
-    expect(piggyMood(calc({ ...base, price: "170" }, RATES))).toBe("worried");
-    expect(piggyMood(calc({ ...base, price: "250" }, RATES))).toBe("sad");
+    expect(catMood(null)).toBe("neutral");
+    expect(catMood(calc({ ...base, price: "100" }, RATES))).toBe("happy");
+    expect(catMood(calc({ ...base, price: "170" }, RATES))).toBe("worried");
+    expect(catMood(calc({ ...base, price: "250" }, RATES))).toBe("sad");
   });
 });
