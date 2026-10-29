@@ -14,6 +14,7 @@
 
 ## 파일 계획
 - apps/web/src/shared/outage-notice.tsx
+- apps/web/src/shared/outage.ts
 - apps/web/src/app/layout.tsx
 - .github/workflows/recover-2026-10-30.yml
 - .agents/specs/0080-outage-notice/**
@@ -26,4 +27,5 @@
 - [ ] 2026-10-30 예약 실행이 API · 사이트를 되살림 → 이 워크플로 지우기 · OUTAGE = null
 
 ## 허점
+- (작업 0081) "use client" 파일에서 내보낸 함수(outageActive)를 서버 layout 에서 불러 빌드가 깨진 채 머지함 — 게이트(Quick)는 빌드를 안 돌려 못 잡음 → layout · 서버 경계를 바꾸면 머지 전에 `npx turbo run build --filter=@hav/web` 를 돌릴 것
 - 장애 안내를 띄우는 길이 미리 없어서 그때 만듦 — OUTAGE 를 남겨 두고 다음엔 값만 바꿈

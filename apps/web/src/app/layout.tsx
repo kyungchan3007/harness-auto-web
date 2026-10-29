@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/site";
-import { OutageNotice, outageActive } from "@/shared/outage-notice";
+import { outageActive } from "@/shared/outage";
+import { OutageNotice } from "@/shared/outage-notice";
 import "./globals.css";
 
 // 공유 미리보기 — 이미지는 app/opengraph-image.tsx · 페이지마다 제목 · 설명은 각 page 의 metadata (작업 0076)

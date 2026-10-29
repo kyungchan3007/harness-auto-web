@@ -4,13 +4,7 @@
 //   빌드 때 이미 끝난 시각이면 HTML 에 안 넣음(show) · 페이지를 연 채로 시각이 지나면 브라우저가 숨김
 //   다음 장애 때 다시 쓰려면 OUTAGE 를 바꿈 · 끝나면 null
 import { useEffect, useState } from "react";
-
-export const OUTAGE: { until: string; text: string } | null = {
-  until: "2026-10-30T00:00:00Z", // 한국 10월 30일(금) 09:00 — D1 한도가 다시 차는 때 (00:00 UTC)
-  text: "데이터베이스 하루 사용 한도를 넘겨 지금은 환율 · 물가 · 작업 기록을 불러오지 못합니다. 한국 시간 10월 30일(금) 오전 9시부터 다시 정상으로 돌아옵니다.",
-};
-
-export const outageActive = (now = Date.now()) => OUTAGE !== null && now < Date.parse(OUTAGE.until);
+import { OUTAGE } from "./outage";
 
 export function OutageNotice({ show }: { show: boolean }) {
   const [on, setOn] = useState(show);
