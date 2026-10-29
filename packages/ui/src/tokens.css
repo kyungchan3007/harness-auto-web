@@ -97,3 +97,20 @@
   background-clip: text;
   color: transparent;
 }
+
+/* 떠오름 (Reveal) — CSS 만 · 처음 그릴 때 바로 보이기 시작 (작업 0060) */
+@keyframes hav-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+.hav-reveal {
+  animation: hav-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@supports (animation-timeline: view()) {
+  .hav-reveal {
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}

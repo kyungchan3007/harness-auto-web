@@ -32,7 +32,8 @@ export function LivePanel({ activity, names, mode }: { activity: Activity; names
         </span>
       </div>
 
-      <div className="p-5 sm:p-8">
+      {/* 기록이 오기 전에도 받은 뒤 높이만큼 자리를 잡아 둠 — 패널이 가운데 정렬이라 커지면 화면이 밀렸음 (CLS · 작업 0060 · 실측 휴대폰 300 · 넓은 화면 320) */}
+      <div className="min-h-[300px] p-5 sm:min-h-[320px] sm:p-8">
         {/* 큰 한 줄 */}
         <p className={`font-semibold tracking-tight transition-all duration-500 ${mode === "status" ? "text-3xl sm:text-4xl" : "text-xl"}`}>
           {error && events.length === 0
