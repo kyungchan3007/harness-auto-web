@@ -88,7 +88,7 @@ function Walker({ target, mood, animate }: { target: number; mood: Mood; animate
     const step = animate ? Math.sign(d) * Math.min(Math.abs(d), SPEED * Math.min(dt, 0.05)) : d;
     w.position.x += step;
     const moving = Math.abs(target - w.position.x) > 0.01;
-    w.rotation.y = moving ? Math.sign(d) * 0.55 : w.rotation.y * 0.85;
+    w.rotation.y = moving ? Math.sign(d) * 1.35 : w.rotation.y * 0.9; // 걸을 땐 옆모습 (네 발로) · 도착하면 앞을 봄
     if (moving !== walking) setWalking(moving);
   });
   return (
