@@ -1,0 +1,4 @@
+# Cloudflare Pages 응답 머리글 — 공유 미리보기 이미지는 확장자 없이 나와서 PNG 라고 알려 줌 (작업 0076)
+/opengraph-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400
