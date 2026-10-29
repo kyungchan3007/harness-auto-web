@@ -69,8 +69,18 @@ describe("Frankfurter 응답 읽기", () => {
 
   it("1 외화 = 1 / rate 원 · 송금 환율 없음", () => {
     const rows = parseFrankfurter(SAMPLE, AT);
-    expect(rows.map((r) => [r.currency, r.baseRate])).toEqual([["EUR", 1483.5254], ["JPY", 8.4246], ["USD", 1328.48]]);
-    expect(rows.every((r) => r.unit === 1 && r.ttb === null && r.source === "frankfurter")).toBe(true);
+    expect(rows.map((r) => [r.currency, r.unit, r.baseRate])).toEqual([["EUR", 1, 1483.5254], ["JPY", 100, 842.4600], ["USD", 1, 1328.48]]);
+    expect(rows.every((r) => r.ttb === null && r.source === "frankfurter")).toBe(true);
+  });
+
+  it("엔 · 루피아는 수출입은행처럼 100 단위로 저장 (FX-04 · 출처가 바뀌어도 단위가 같음)", () => {
+    const rows = parseFrankfurter([...SAMPLE, { date: "2026-10-28", base: "KRW", quote: "IDR", rate: 11.6 }], AT);
+    const jpy = rows.find((r) => r.currency === "JPY");
+    const idr = rows.find((r) => r.currency === "IDR");
+    expect(jpy).toMatchObject({ unit: 100 });
+    expect(idr).toMatchObject({ unit: 100, baseRate: 8.6207 });
+    // 1 단위 값은 예전 저장 방식과 같음
+    expect(jpy!.baseRate / jpy!.unit).toBeCloseTo(8.4246, 3);
   });
 
   it("출처가 준 날짜를 그대로 (요청 날짜로 바꾸지 않음)", async () => {
