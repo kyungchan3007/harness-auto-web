@@ -169,16 +169,19 @@ function useColors() {
     () => ({
       cream: new Color("#f3e9da"),
       white: new Color("#fffdf8"),
-      point: new Color("#5a3e2b"),
-      mask: new Color("#6e4e37"),
+      point: new Color("#6b4a33"),
+      // 가면은 연하고 부드럽게 — 진하면 도둑 가면처럼 무서워 보였음 (2026-10-29 사용자: "너무 무섭다")
+      mask: new Color("#a07a5c"),
       inner: new Color("#e9a6a6"),
       iris: new Color("#4a8fe0"),
       pupil: new Color("#10243d"),
       nose: new Color("#e58b9a"),
-      blush: new Color("#f7a8b8"),
+      blush: new Color("#ff9fb8"),
       hat: new Color("#ffc928"),
       hatDark: new Color("#e0a800"),
-      gold: new Color("#f4c542"),
+      gold: new Color("#ffbf1f"),
+      goldRim: new Color("#e39b00"),
+      goldInk: new Color("#8a5200"),
       accent: new Color(tokenColor("--hav-accent", "#4ff0e0")),
       red: new Color(tokenColor("--hav-expensive", "#ff5a5f")),
       blue: new Color(tokenColor("--hav-cheap", "#4c9bff")),
@@ -190,20 +193,34 @@ function useColors() {
 }
 type Colors = ReturnType<typeof useColors>;
 
-function Eye({ x, eye, pupil, c }: { x: number; eye: React.Ref<Group>; pupil: React.Ref<Group>; c: Colors }) {
+/** 눈 — 큰 아기 고양이 눈 (동공 크게 · 반짝임 둘) · smile 이면 ^ 모양으로 감음 (가늘게 뜨면 째려보는 것 같았음) */
+function Eye({ x, eye, pupil, smile, c }: { x: number; eye: React.Ref<Group>; pupil: React.Ref<Group>; smile: boolean; c: Colors }) {
+  if (smile)
+    return (
+      <group position={[x, 0.02, 0.43]}>
+        <mesh>
+          <torusGeometry args={[0.062, 0.016, 8, 20, Math.PI]} />
+          <meshBasicMaterial color={c.point} />
+        </mesh>
+      </group>
+    );
   return (
     <group ref={eye} position={[x, 0.03, 0.4]}>
       <mesh scale={[1, 1.08, 0.5]}>
-        <sphereGeometry args={[0.095, 24, 24]} />
-        <meshStandardMaterial color={c.iris} roughness={0.25} />
+        <sphereGeometry args={[0.1, 24, 24]} />
+        <meshStandardMaterial color={c.iris} roughness={0.2} />
       </mesh>
       <group ref={pupil}>
-        <mesh position={[0, 0, 0.04]} scale={[0.8, 1, 0.5]}>
-          <sphereGeometry args={[0.05, 16, 16]} />
+        <mesh position={[0, -0.005, 0.035]} scale={[0.95, 1.05, 0.5]}>
+          <sphereGeometry args={[0.07, 18, 18]} />
           <meshBasicMaterial color={c.pupil} />
         </mesh>
-        <mesh position={[0.025, 0.035, 0.065]}>
-          <sphereGeometry args={[0.02, 10, 10]} />
+        <mesh position={[0.03, 0.04, 0.07]}>
+          <sphereGeometry args={[0.03, 12, 12]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+        <mesh position={[-0.03, -0.035, 0.07]}>
+          <sphereGeometry args={[0.013, 10, 10]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
       </group>
@@ -480,6 +497,8 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
     }
   });
 
+  // 웃을 때 · 꾹꾹이할 때는 ^ ^ 로 감은 눈 (가늘게 뜨면 째려보는 것 같았음)
+  const smile = mood === "happy" || (mood === "typing" && gear === "hardhat");
   return (
     <group position={[0, -0.05, 0]}>
       <group ref={root}>
@@ -539,7 +558,7 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
               <meshStandardMaterial color={c.cream} roughness={0.85} />
             </mesh>
           ))}
-          <mesh position={[0, 0.05, 0.24]} scale={[1.08, 0.74, 0.58]}>
+          <mesh position={[0, 0.02, 0.24]} scale={[0.98, 0.66, 0.58]}>
             <sphereGeometry args={[0.29, 28, 28]} />
             <meshStandardMaterial color={c.mask} roughness={0.8} />
           </mesh>
@@ -547,8 +566,8 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
             <sphereGeometry args={[0.115, 20, 20]} />
             <meshStandardMaterial color={c.white} roughness={0.8} />
           </mesh>
-          <Eye x={-0.145} eye={eyeL} pupil={pupilL} c={c} />
-          <Eye x={0.145} eye={eyeR} pupil={pupilR} c={c} />
+          <Eye x={-0.145} eye={eyeL} pupil={pupilL} smile={smile} c={c} />
+          <Eye x={0.145} eye={eyeR} pupil={pupilR} smile={smile} c={c} />
           <mesh position={[0, -0.06, 0.43]} rotation={[0.3, 0, 0]} scale={[1.3, 0.8, 0.7]}>
             <sphereGeometry args={[0.027, 12, 12]} />
             <meshStandardMaterial color={c.nose} roughness={0.4} />
@@ -560,9 +579,9 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
             <meshBasicMaterial color="#7a2f3a" />
           </mesh>
           {[-0.23, 0.23].map((x) => (
-            <mesh key={x} position={[x, -0.11, 0.35]} scale={[1, 0.55, 0.3]}>
-              <sphereGeometry args={[0.05, 14, 14]} />
-              <meshBasicMaterial color={c.blush} transparent opacity={0.75} />
+            <mesh key={x} position={[x, -0.1, 0.36]} scale={[1.35, 0.7, 0.3]}>
+              <sphereGeometry args={[0.058, 14, 14]} />
+              <meshBasicMaterial color={c.blush} transparent opacity={0.85} />
             </mesh>
           ))}
           {[-1, 1].flatMap((s) =>
@@ -677,14 +696,14 @@ function HardHat({ mood, c }: { mood: Mood; c: Colors }) {
 
 /** ₩ 금화 — 앉아서 앞발로 안음 */
 function HugCoin({ c }: { c: Colors }) {
-  const tex = useMemo(() => (typeof document === "undefined" ? null : faceTexture("₩", `#${c.gold.getHexString()}`, "#7a5200")), [c]);
+  const tex = useMemo(() => (typeof document === "undefined" ? null : faceTexture("₩", `#${c.gold.getHexString()}`, `#${c.goldInk.getHexString()}`)), [c]);
   useEffect(() => () => tex?.dispose(), [tex]);
   return (
     <mesh position={[0, -0.3, 0.38]} rotation={[Math.PI / 2 - 0.15, 0, 0]}>
       <cylinderGeometry args={[0.2, 0.2, 0.06, 40]} />
-      <meshStandardMaterial attach="material-0" color={c.hatDark} metalness={0.6} roughness={0.3} />
-      <meshStandardMaterial attach="material-1" map={tex} metalness={0.35} roughness={0.35} />
-      <meshStandardMaterial attach="material-2" map={tex} metalness={0.35} roughness={0.35} />
+      <meshStandardMaterial attach="material-0" color={c.goldRim} metalness={0.85} roughness={0.22} emissive={c.goldRim} emissiveIntensity={0.22} />
+      <meshStandardMaterial attach="material-1" map={tex} metalness={0.35} roughness={0.28} emissive={c.gold} emissiveIntensity={0.12} />
+      <meshStandardMaterial attach="material-2" map={tex} metalness={0.35} roughness={0.28} emissive={c.gold} emissiveIntensity={0.12} />
     </mesh>
   );
 }
