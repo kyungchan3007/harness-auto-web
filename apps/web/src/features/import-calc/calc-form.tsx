@@ -3,6 +3,7 @@
 // 직구 계산기 화면 — 입력은 이 화면 상태에만 (보내지 않음 · 저장하지 않음 IMP-01) · 결과 옆에 환율 기준일 · 출처 (IMP-02) · "예상" 안내 (IMP-04)
 import { currencyName, groupByRegion, SOURCE_NAME } from "@hav/shared/currency";
 import type { FxRate } from "@hav/shared/fx";
+import { Input, Select } from "@hav/ui/field";
 import { useState, useSyncExternalStore } from "react";
 import { MoneyCatLazy } from "../../shared/three-lazy";
 import { type CalcInput, calc, catMood } from "./calc";
@@ -29,34 +30,34 @@ export function CalcForm({ rates }: { rates: FxRate[] }) {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-12">
       <form className="grid content-start gap-5" onSubmit={(e) => e.preventDefault()} aria-label="직구 계산 입력">
         <Field label="통화" htmlFor="currency">
-          <select id="currency" value={input.currency} onChange={set("currency")} className={box}>
+          <Select id="currency" value={input.currency} onChange={set("currency")}>
             {codes.map((c) => (
               <option key={c} value={c}>
                 {currencyName(c)} {c}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
         <Field label="물건 값" hint="현지 세금 · 현지 배송비까지 넣은 값" htmlFor="price" error={err("price")}>
           <div className="relative">
-            <input id="price" inputMode="decimal" autoComplete="off" value={input.price} onChange={set("price")} placeholder="180" className={`${box} pr-14`} />
+            <Input id="price" inputMode="decimal" autoComplete="off" value={input.price} onChange={set("price")} placeholder="180" className="pr-14" />
             <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-fg-2">{input.currency}</span>
           </div>
         </Field>
         <Field label="보내는 곳" hint="건강기능식품 · 의약품 등은 일반통관이라 150달러" htmlFor="route">
-          <select id="route" value={input.route} onChange={set("route")} className={box}>
+          <Select id="route" value={input.route} onChange={set("route")}>
             {(Object.keys(ROUTE_LABEL) as Route[]).map((k) => (
               <option key={k} value={k}>
                 {ROUTE_LABEL[k]} — 한도 {k === "us-list" ? 200 : 150}달러
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
         <Field label="국제 배송비" hint="한도를 넘을 때만 세금에 더함 · 모르면 비워 두기" htmlFor="shipping" error={err("shipping")}>
-          <input id="shipping" inputMode="decimal" autoComplete="off" value={input.shipping} onChange={set("shipping")} placeholder="0" className={box} />
+          <Input id="shipping" inputMode="decimal" autoComplete="off" value={input.shipping} onChange={set("shipping")} placeholder="0" />
         </Field>
         <Field label="관세율 (%)" hint="품목마다 다름 · 모르면 비워 두기" htmlFor="duty" error={err("dutyRate")}>
-          <input id="duty" inputMode="decimal" autoComplete="off" value={input.dutyRate} onChange={set("dutyRate")} placeholder="모르면 비워 두기" className={box} />
+          <Input id="duty" inputMode="decimal" autoComplete="off" value={input.dutyRate} onChange={set("dutyRate")} placeholder="모르면 비워 두기" />
           <a href={RULES_SOURCE.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-sm text-accent hover:underline">
             관세청에서 품목 세율 찾기 ↗
           </a>
@@ -115,7 +116,6 @@ export function CalcForm({ rates }: { rates: FxRate[] }) {
 }
 
 const noop = () => () => {};
-const box = "w-full rounded-card border border-line bg-surface-2 px-4 py-3 text-base text-fg placeholder:text-fg-2 focus:border-accent focus:outline-none";
 const usd = (n: number) => n.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
 
 function Field({ label, hint, htmlFor, error, children }: { label: string; hint?: string; htmlFor: string; error?: string | null; children: React.ReactNode }) {
