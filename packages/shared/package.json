@@ -11,7 +11,8 @@
     "./errors": "./src/errors.ts",
     "./activity": "./src/activity.ts",
     "./tasks": "./src/tasks.ts",
-    "./currency": "./src/currency.ts"
+    "./currency": "./src/currency.ts",
+    "./travel": "./src/travel.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

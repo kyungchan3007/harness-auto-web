@@ -13,7 +13,7 @@ export function NavBar({ title, logo, links, action }: { title: string; logo?: R
           {title}
         </a>
         {/* 휴대폰에서도 메뉴는 보이고 · 버튼은 넓은 화면에서만 (좁으면 메뉴가 먼저) · 링크가 많아 넘치면 메뉴 줄만 옆으로 넘김 */}
-        <ul className="ml-auto flex min-w-0 gap-3.5 overflow-x-auto text-xs whitespace-nowrap text-fg-2 [scrollbar-width:none] sm:gap-5">
+        <ul className="ml-auto flex min-w-0 gap-3.5 overflow-x-auto text-xs whitespace-nowrap text-fg-2 [scrollbar-width:none] [mask-image:linear-gradient(to_right,black_85%,transparent)] sm:gap-5 sm:[mask-image:none]">
           {links.map((l) => (
             <li key={l.href}>
               <a href={l.href} aria-current={l.current ? "page" : undefined} className={`transition-colors hover:text-fg ${l.current ? "text-fg" : ""}`}>
