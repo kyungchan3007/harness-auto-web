@@ -5,6 +5,7 @@
 import { REGIONS, type Region, currencyName, currencyRegion, groupByRegion, matchCurrency } from "@hav/shared/currency";
 import type { Signal } from "@hav/shared/signal";
 import { signalLabel } from "@hav/ui/signal-badge";
+import { Input } from "@hav/ui/field";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -26,15 +27,8 @@ export function CurrencyList({ items }: { items: ListItem[] }) {
 
   return (
     <nav aria-label="통화 목록" className="min-w-0">
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="통화 · 나라 찾기"
-        aria-label="통화 찾기"
-        className="w-full rounded-card border border-line bg-surface-2 px-4 py-2.5 text-sm text-fg placeholder:text-fg-2 focus:border-accent focus:outline-none"
-      />
-      <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 text-xs" role="group" aria-label="지역">
+      <Input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="통화 · 나라 찾기" aria-label="통화 찾기" className="h-11 text-sm" />
+      <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 text-xs lg:flex-wrap lg:overflow-visible" role="group" aria-label="지역">
         {[{ id: "all" as const, label: "전체" }, ...regions].map((r) => (
           <button
             key={r.id}
@@ -47,7 +41,8 @@ export function CurrencyList({ items }: { items: ListItem[] }) {
           </button>
         ))}
       </div>
-      <ul className="mt-3 flex gap-2 overflow-x-auto pb-2 lg:max-h-[calc(100svh-14rem)] lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pr-1">
+      {/* 스크롤 영역 안쪽 여백 — 칸 테두리가 영역 끝에 붙어 잘려 보였음 (작업 0067) */}
+      <ul className="mt-3 flex gap-2 overflow-x-auto p-0.5 pb-2 lg:max-h-[calc(100svh-14rem)] lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
         {shown.map((i) => {
           const on = i.currency === current;
           return (
@@ -56,7 +51,7 @@ export function CurrencyList({ items }: { items: ListItem[] }) {
                 href={`/currencies/${i.currency}`}
                 aria-current={on ? "page" : undefined}
                 scroll={false}
-                className={`flex items-center gap-2 rounded-card px-3 py-2.5 text-sm ring-1 transition-colors ${on ? "bg-surface-2 text-fg ring-accent" : "text-fg-2 ring-line hover:text-fg"}`}
+                className={`flex items-center gap-2 rounded-field border px-3 py-2.5 text-sm transition-colors ${on ? "border-accent bg-surface-2 text-fg" : "border-line text-fg-2 hover:border-fg-2 hover:text-fg"}`}
               >
                 <span aria-hidden className="text-accent">
                   +

@@ -85,6 +85,7 @@
   --text-lead--line-height: 1.5;
 
   --radius-card: 1.75rem;
+  --radius-field: 0.875rem; /* 입력 칸 · 고르는 줄 — 카드만큼 둥글면 곡선 테두리가 흐려 보였음 (작업 0067) */
   --radius-pill: 980px;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
