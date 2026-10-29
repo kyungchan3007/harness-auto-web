@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { api } from "./api";
+import { api, mustHave } from "./api";
 
 const json = (body: unknown, status = 200) => async () => new Response(JSON.stringify(body), { status });
+const quick = { retryDelayMs: 0 };
 
 // 배포한 API 실제 응답 모양 (2026-10-28)
 const LATEST = {
@@ -22,21 +23,63 @@ describe("api (빌드 때 받기)", () => {
   });
 
   it("HTTP 오류 · 연결 실패 → 던지지 않고 ok false (빌드가 깨지지 않음)", async () => {
-    expect(await api.latest({ fetcher: json({}, 503) })).toEqual({ ok: false, reason: "HTTP 503" });
+    expect(await api.latest({ fetcher: json({}, 503), ...quick })).toEqual({ ok: false, reason: "HTTP 503" });
     const down: typeof fetch = async () => { throw new TypeError("fetch failed"); };
-    expect(await api.latest({ fetcher: down })).toEqual({ ok: false, reason: "연결 실패" });
+    expect(await api.latest({ fetcher: down, ...quick })).toEqual({ ok: false, reason: "연결 실패" });
   });
 
   it("시간 초과 → ok false · 시간 초과", async () => {
     const slow: typeof fetch = (_u, init) =>
       new Promise((_, reject) => init?.signal?.addEventListener("abort", () => reject(init.signal?.reason)));
-    expect(await api.latest({ fetcher: slow, timeoutMs: 20 })).toEqual({ ok: false, reason: "시간 초과" });
+    expect(await api.latest({ fetcher: slow, timeoutMs: 20, ...quick })).toEqual({ ok: false, reason: "시간 초과" });
+  });
+
+  it("연결이 잠깐 끊기면 다시 받음 · 모양이 다르거나 4xx 면 다시 안 받음 (작업 0076)", async () => {
+    let n = 0;
+    const flaky: typeof fetch = async () => {
+      n++;
+      if (n < 3) throw new TypeError("fetch failed");
+      return new Response(JSON.stringify(LATEST));
+    };
+    expect(await api.latest({ fetcher: flaky, ...quick })).toMatchObject({ ok: true });
+    expect(n).toBe(3);
+
+    let calls = 0;
+    const counted = (status: number, body: unknown = {}): typeof fetch => async () => {
+      calls++;
+      return new Response(JSON.stringify(body), { status });
+    };
+    calls = 0;
+    await api.latest({ fetcher: counted(404), ...quick });
+    expect(calls).toBe(1);
+    calls = 0;
+    await api.latest({ fetcher: counted(200, { nope: 1 }), ...quick });
+    expect(calls).toBe(1);
+    calls = 0;
+    await api.latest({ fetcher: counted(503), ...quick });
+    expect(calls).toBe(3);
   });
 
   it("주소: 끝 / 는 떼고 경로를 붙임", async () => {
     let url = "";
     await api.signal("USD", { base: "https://x.example/", fetcher: async (u) => { url = String(u); return new Response("{}"); } });
     expect(url).toBe("https://x.example/signal/USD");
+  });
+});
+
+describe("운영 빌드 지키기 (작업 0076)", () => {
+  const bad = { ok: false as const, reason: "HTTP 500" };
+  const prod = { CF_PAGES: "1", CF_PAGES_BRANCH: "main" };
+
+  it("운영 빌드(Cloudflare Pages · main)에서 못 받으면 멈춤 — 예전 배포가 남게", () => {
+    expect(() => mustHave(bad, "환율", prod)).toThrow(/운영 빌드 멈춤: 환율/);
+  });
+
+  it("미리보기 · 로컬 빌드는 멈추지 않고 그대로 (\"자료 없음\" 화면) · 받았으면 늘 그대로", () => {
+    expect(mustHave(bad, "환율", { CF_PAGES: "1", CF_PAGES_BRANCH: "task/x" })).toBe(bad);
+    expect(mustHave(bad, "환율", {})).toBe(bad);
+    const good = { ok: true as const, data: 1 };
+    expect(mustHave(good, "환율", prod)).toBe(good);
   });
 });
 

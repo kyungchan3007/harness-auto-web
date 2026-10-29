@@ -3,7 +3,9 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "out/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "dist/**"],
+      "env": ["TRIPFX_API_URL"],
+      "passThroughEnv": ["CF_PAGES", "CF_PAGES_BRANCH"]
     },
     "lint": {
       "dependsOn": ["^lint"]

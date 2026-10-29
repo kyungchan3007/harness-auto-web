@@ -4,7 +4,7 @@
 
 ## 접근
 - D1 새 표 `task_snags` (task 기본 키 · blocked · failed · since · updated_at)
-  - 마이그레이션 0004: 표 만들기 + 지금 남은 activity_events 로 처음 값 (since = 그 작업의 가장 이른 기록 시각)
+  - 마이그레이션 0005: 표 만들기 + 지금 남은 activity_events 로 처음 값 (since = 그 작업의 가장 이른 기록 시각)
 - `POST /activity` 저장 뒤 `snagOf(event)` 가 blocked/failed 면 그 작업 줄을 +1 (upsert)
 - `@hav/shared/tasks` TasksSummary 에 `snags: Record<task, { blocked, failed }>` · `snagsSince: 시각 | null` — 둘 다 `.default` 로 예전 응답도 통과 (웹이 먼저 배포돼도 깨지지 않음)
 - `summarize(rows, snags)` 순수 함수가 같이 만듦
@@ -17,7 +17,7 @@
 
 ## 파일 계획
 - apps/api/src/db/schema.ts
-- apps/api/drizzle/migrations/0004_*.sql
+- apps/api/drizzle/migrations/0005_*.sql
 - apps/api/drizzle/migrations/meta/**
 - apps/api/src/features/activity/store.ts
 - apps/api/src/features/activity/activity.test.ts
@@ -35,6 +35,7 @@
 - .agents/specs/0075-task-snags/**
 
 ## 계획 밖 변경 이유
+- 작업 0076 · 0077 · 0078 의 파일들 (specs · web · migrations 0004 · turbo.json 등) — 이 작업에서 바꾼 게 아니라 마이그레이션 번호를 맞추려고 main 을 병합하며 들어옴
 
 ## 위험
 - schema.ts · 마이그레이션은 보호 파일 — 사용자 "알아서 진행 · 묻지 마" 지시(원문)를 승인으로 보고 harness-approved
@@ -45,5 +46,6 @@
 - 로컬 D1 마이그레이션 적용 · 배포 뒤 운영 /tasks · 캡처
 
 ## 계획과 달라진 점
+- 마이그레이션 번호 0004 → 0005 — 작업 0077(fx_rates 색인)이 0004 로 먼저 머지됨 · main 을 병합하고 drizzle-kit 으로 다시 만듦
 - 빨간 블록을 젠가처럼 바깥으로 빼냄 (`tower.ts` pulled) — 색만으로는 위쪽 핑크와 섞여 안 보였음
 - `apps/web/src/features/log/log.test.ts` 시험 값에 snags · snagsSince 추가 (계약이 늘어서)

@@ -9,7 +9,8 @@ import { Tooltip } from "@hav/ui/tooltip";
 import type { Metadata } from "next";
 import { Characters } from "./characters";
 
-export const metadata: Metadata = { title: "디자인 시스템 · Tripfx" };
+// 개발용 확인 페이지 — 검색에 내보내지 않음 (작업 0076)
+export const metadata: Metadata = { title: "디자인 시스템 · Tripfx", robots: { index: false, follow: false } };
 
 // 디자인 시스템 확인용 — 숫자는 모두 예시 (실제 데이터 아님)
 export default function DesignPage() {

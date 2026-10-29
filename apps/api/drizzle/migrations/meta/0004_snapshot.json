@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "10cb1f95-9292-4452-9a9f-a91cc7c703d3",
+  "id": "f98eebb7-956e-40e5-8c01-0916a50a883c",
   "prevId": "a6f72ff8-2377-4059-861c-636e38191b64",
   "tables": {
     "activity_events": {
@@ -184,7 +184,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "fx_rates_currency_date": {
+          "name": "fx_rates_currency_date",
+          "columns": [
+            "currency",
+            "date"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "fx_rates_date_currency_pk": {
@@ -307,53 +316,6 @@
           "name": "price_levels_country_year_pk"
         }
       },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "task_snags": {
-      "name": "task_snags",
-      "columns": {
-        "task": {
-          "name": "task",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "blocked": {
-          "name": "blocked",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "failed": {
-          "name": "failed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "since": {
-          "name": "since",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     }
