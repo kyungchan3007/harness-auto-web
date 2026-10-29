@@ -24,6 +24,10 @@ describe("GitHub 목록 → 행", () => {
   it("제목의 줄바꿈 · 제어 문자는 공백 · 너무 길면 자름", () => {
     expect(splitTitle("[0001]  a\nb\u0007c ")).toEqual({ task: "0001", name: "a b c" });
     expect(splitTitle("x".repeat(500)).name).toHaveLength(120);
+    // 작업 0057 부터 쓴 제목 모양 (작업 0066)
+    expect(splitTitle("작업 0066: 책상 고양이가 테스트에 멈추던 것 고침")).toEqual({ task: "0066", name: "책상 고양이가 테스트에 멈추던 것 고침" });
+    expect(splitTitle("작업 0058 · 통화 둘러보기")).toEqual({ task: "0058", name: "통화 둘러보기" });
+    expect(splitTitle("작업 노트 정리")).toEqual({ task: null, name: "작업 노트 정리" });
   });
 });
 

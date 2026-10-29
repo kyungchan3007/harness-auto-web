@@ -17,7 +17,8 @@ const MAX_NAME = 120;
 /** "[0046] 실시간 작업 기록 …" → { task: "0046", name: "실시간 작업 기록 …" } · 제어 문자 · 줄바꿈은 공백으로 */
 export function splitTitle(title: string): { task: string | null; name: string } {
   const clean = title.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
-  const m = /^\[(\d{4})\]\s*(.+)$/.exec(clean);
+  // "[0056] 이름" · "작업 0058: 이름" 둘 다 — 작업 0057 부터 PR 제목을 뒤 모양으로 써서 번호를 못 읽었음 (작업 0066)
+  const m = /^\[(\d{4})\]\s*(.+)$/.exec(clean) ?? /^작업\s*(\d{4})\s*[:：·-]\s*(.+)$/.exec(clean);
   const { task, name } = m ? { task: m[1], name: m[2] } : { task: null, name: clean };
   return { task, name: name.slice(0, MAX_NAME) };
 }
