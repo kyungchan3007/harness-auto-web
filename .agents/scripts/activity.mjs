@@ -3,7 +3,7 @@
 //   명령어 · 파일 내용 · 도구 결과 글 · 경로는 절대 보내지 않음 (출력은 통과/실패를 가리는 데만 읽고 버림)
 // 보내기는 따로 띄운 프로세스가 함 → 훅은 바로 끝남 · 실패해도 작업을 막지 않음 (항상 exit 0)
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { decide } from "./outside-guard.mjs";
 
@@ -29,15 +29,16 @@ export function safeFile(path) {
 }
 
 /** Bash 명령 → 종류 · 고정 문장 (명령 글은 밖으로 나가지 않음) · 위에서부터 먼저 맞는 것 */
+// 앞에서부터 처음 맞는 줄 — 배포 쪽(머지 · PR 만듦 · 올림)을 먼저 봄: 커밋 · 올림 · PR 을 한 번에 하면 가장 멀리 간 일로 (작업 0066)
 const BASH_RULES = [
+  [/\bgh pr (merge)\b/, "pr", "PR 머지"],
+  [/\bgh pr (create)\b/, "pr", "PR 만듦"],
+  [/\bgit push\b/, "pr", "브랜치 올림"],
   [/checks\.sh/, "gate", "게이트 검사"],
   [/\b(vitest|playwright)\b|\bnpm (run )?test\b|node --test|turbo run test/, "test", "테스트 실행"],
   [/\btsc\b|\beslint\b|\bnpm run (lint|typecheck)\b/, "test", "타입 · 린트 검사"],
   [/\bnpm run build\b|next build|turbo run build|--dry-run/, "build", "빌드"],
   [/\bgit commit\b/, "commit", "커밋"],
-  [/\bgit push\b/, "pr", "브랜치 올림"],
-  [/\bgh pr (create)\b/, "pr", "PR 만듦"],
-  [/\bgh pr (merge)\b/, "pr", "PR 머지"],
   [/\bgh (pr|run|issue)\b/, "pr", "GitHub 확인"],
   [/\bnpm (i|install|ci|uninstall)\b/, "install", "패키지 설치"],
   [/drizzle-kit|migrations apply/, "run", "DB 마이그레이션"],
@@ -47,8 +48,18 @@ const BASH_RULES = [
   [/^\s*(cd [^&]+&&\s*)?(cat|head|tail|sed -n)\b/, "read", "파일 읽기"],
   [/\bgit (status|diff|log|show)\b/, "read", "변경 확인"],
 ];
+
+/** 명령에서 글(따옴표 안 · heredoc 본문)을 뺌 — PR 설명에 "checks.sh" 가 있어 커밋 · PR 을 게이트로 잘못 셌음 (작업 0066) */
+export function stripText(command) {
+  return command
+    .replace(/<<-?\s*['"]?(\w+)['"]?[^\n]*\n[\s\S]*?\n\s*\1\b/g, "<<글")
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
+    .replace(/'[^']*'/g, "''");
+}
+
 export function classifyBash(command) {
-  for (const [re, kind, label] of BASH_RULES) if (re.test(command)) return { kind, label };
+  const c = stripText(command);
+  for (const [re, kind, label] of BASH_RULES) if (re.test(c)) return { kind, label };
   return { kind: "run", label: "명령 실행" };
 }
 
@@ -101,6 +112,26 @@ export function taskOf(root) {
   }
 }
 
+const LAST_TASK = (root) => join(root, ".tmp", "activity-last-task");
+const LAST_TASK_MS = 3 * 60 * 60 * 1000;
+
+/** 보낼 작업 번호 — 브랜치에 있으면 그것(기억해 둠) · 없을 때 배포 쪽 기록(pr)이면 마지막 작업 번호
+ *  "gh pr merge --delete-branch" 는 끝나면 main 으로 돌아와 있어서 머지 기록에 작업 번호가 빠졌음 (작업 0066) */
+export function taskFor(root, branchTask, kind, now = Date.now()) {
+  try {
+    if (branchTask) {
+      mkdirSync(join(root, ".tmp"), { recursive: true });
+      writeFileSync(LAST_TASK(root), `${branchTask} ${now}`);
+      return branchTask;
+    }
+    if (kind !== "pr") return null;
+    const [task, at] = readFileSync(LAST_TASK(root), "utf8").trim().split(" ");
+    return /^\d{4}$/.test(task) && now - Number(at) < LAST_TASK_MS ? task : null;
+  } catch {
+    return branchTask ?? null;
+  }
+}
+
 const tokenOf = (root) => {
   if (process.env.TRIPFX_ACTIVITY_TOKEN) return process.env.TRIPFX_ACTIVITY_TOKEN.trim();
   try {
@@ -133,6 +164,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       try {
         const event = JSON.parse(raw || "{}");
         const a = toActivity(event, process.env.CLAUDE_PROJECT_DIR || event.cwd || root, taskOf(root));
+        if (a) a.task = taskFor(root, a.task, a.kind);
         if (a && tokenOf(root)) spawn(process.execPath, [process.argv[1], "--send", JSON.stringify(a)], { detached: true, stdio: "ignore", env: process.env }).unref();
       } catch {
         // 기록이 실패해도 작업은 계속

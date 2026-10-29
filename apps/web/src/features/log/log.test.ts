@@ -128,3 +128,29 @@ describe("작업 책상 단계", () => {
     expect(STAGES.map((s) => s.name)).toEqual(["이슈 적기", "작업하기", "테스트", "배포"]);
   });
 });
+
+describe("작업 책상 — 머지 기록에 작업 번호가 빠져도 (작업 0066)", () => {
+  const at = (m: number) => `2026-10-29T07:${String(m).padStart(2, "0")}:00Z`;
+  // 실제로 본 순서 (최신부터): 머지는 main 에서 기록돼 작업 번호 없음
+  const real = [
+    ev(5, at(36), { kind: "read", label: "파일 읽기", task: null }),
+    ev(4, at(33), { kind: "pr", label: "PR 머지", task: null }),
+    ev(3, at(32), { kind: "gate", label: "게이트 검사", task: "0065" }),
+    ev(2, at(31), { kind: "build", label: "빌드", task: "0065" }),
+    ev(1, at(20), { kind: "edit", label: "코드 수정", file: "a.tsx", task: "0065" }),
+  ];
+
+  it("바로 앞 작업의 머지로 셈 → 4 배포", () => {
+    expect(deskState(real, [])).toEqual({ task: "0065", stage: 3, finished: false });
+  });
+
+  it("머지 목록에 들어오면 끝", () => {
+    expect(deskState(real, [{ number: 66, task: "0065", name: "x", url: "u", mergedAt: at(34) }])).toMatchObject({ finished: true });
+  });
+
+  it("배포 쪽이 아닌 작업 번호 없는 기록 · GitHub 확인은 붙이지 않음", () => {
+    const e = [ev(2, at(10), { kind: "pr", label: "GitHub 확인", task: null }), ev(1, at(9), { kind: "test", label: "테스트 실행", task: "0065" })];
+    expect(deskState(e, [])).toEqual({ task: "0065", stage: 2, finished: false });
+  });
+});
+

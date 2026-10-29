@@ -7,7 +7,10 @@ import { outOfPlan, removedAssertions } from "./scope-check.mjs";
 import { emptyTemplate } from "./spec-check.mjs";
 import { decide, isOutside, writeTargets } from "./outside-guard.mjs";
 import { englishReason, lastTurnTexts } from "./korean-gate.mjs";
-import { classifyBash, resultOf, safeFile, toActivity } from "./activity.mjs";
+import { classifyBash, resultOf, safeFile, stripText, taskFor, toActivity } from "./activity.mjs";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join as pathJoin } from "node:path";
 
 test("glob: ** · * · 폴더", () => {
   assert.ok(globToRegExp("src/cart/**").test("src/cart/a/b.ts"));
@@ -162,6 +165,29 @@ test("실시간 기록: 명령 분류 · 통과/실패", () => {
   assert.equal(resultOf("test", "Tests  52 passed (52)"), true);
   assert.equal(resultOf("test", "Tests  1 failed | 51 passed"), false);
   assert.equal(resultOf("run", "passed"), null);
+});
+
+test("실시간 기록: 한 번에 커밋 · 올림 · PR 을 하면 가장 멀리 간 일 · PR 설명 글 속 checks.sh 는 무시 (작업 0066)", () => {
+  const body = "gh pr create --title \"t\" --body \"$(cat <<'EOF'\n- `bash .agents/checks.sh` ALL PASS\nEOF\n)\"";
+  assert.equal(classifyBash(`git add -A && git commit -q -m "x" && git push -q -u origin task/0065-a; ${body}; gh pr checks task/0065-a --watch`).label, "PR 만듦");
+  assert.equal(classifyBash("git commit -q -m \"게이트 checks.sh 통과\"").label, "커밋");
+  assert.equal(classifyBash("gh pr merge 66 --squash --delete-branch; git switch -q main").label, "PR 머지");
+  assert.equal(classifyBash("git add -A && git commit -q -m x && git push -q -u origin task/0066-a").label, "브랜치 올림");
+  assert.equal(classifyBash("bash .agents/checks.sh 2>&1 | grep -E \"결과|FAIL\"").kind, "gate");
+  assert.equal(stripText("echo 'a checks.sh' \"b\" c"), "echo '' \"\" c");
+});
+
+test("실시간 기록: 머지 뒤 main 으로 돌아와도 배포 기록은 마지막 작업 번호 (작업 0066)", () => {
+  const root = mkdtempSync(pathJoin(tmpdir(), "act-"));
+  try {
+    assert.equal(taskFor(root, null, "pr", 1000), null); // 기억한 게 없으면 없음
+    assert.equal(taskFor(root, "0065", "gate", 1000), "0065");
+    assert.equal(taskFor(root, null, "pr", 2000), "0065"); // main 에서 머지
+    assert.equal(taskFor(root, null, "read", 2000), null); // 배포 쪽이 아니면 붙이지 않음
+    assert.equal(taskFor(root, null, "pr", 1000 + 4 * 60 * 60 * 1000), null); // 3시간 넘으면 버림
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("실시간 기록: 하네스가 막을 쓰기는 실행 전에 🛑 · 그 밖의 실행 전 · 잡음 도구는 안 보냄", () => {
