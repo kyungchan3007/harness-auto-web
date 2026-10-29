@@ -8,12 +8,12 @@ export function NavBar({ title, logo, links, action }: { title: string; logo?: R
   return (
     <header data-surface="dark" className="sticky top-0 z-50 border-b border-line bg-surface/80 backdrop-blur-xl">
       <nav className="mx-auto flex h-13 max-w-5xl items-center gap-4 px-4 text-fg sm:gap-6 sm:px-8">
-        <a href="/" className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+        <a href="/" className="flex shrink-0 items-center gap-2 text-xl font-semibold tracking-tight">
           {logo}
           {title}
         </a>
-        {/* 휴대폰에서도 메뉴는 보이고 · 버튼은 넓은 화면에서만 (좁으면 메뉴가 먼저) */}
-        <ul className="ml-auto flex gap-4 text-xs whitespace-nowrap text-fg-2 sm:gap-5">
+        {/* 휴대폰에서도 메뉴는 보이고 · 버튼은 넓은 화면에서만 (좁으면 메뉴가 먼저) · 링크가 많아 넘치면 메뉴 줄만 옆으로 넘김 */}
+        <ul className="ml-auto flex min-w-0 gap-3.5 overflow-x-auto text-xs whitespace-nowrap text-fg-2 [scrollbar-width:none] sm:gap-5">
           {links.map((l) => (
             <li key={l.href}>
               <a href={l.href} aria-current={l.current ? "page" : undefined} className={`transition-colors hover:text-fg ${l.current ? "text-fg" : ""}`}>
