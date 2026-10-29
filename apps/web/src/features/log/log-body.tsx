@@ -11,7 +11,7 @@ import { TaskDesks } from "./task-desks";
 import { LivePanel, type Mode } from "./live-panel";
 import { MOOD_TEXT, moodOf } from "./mood";
 import { liveStatus, todayStats } from "./status";
-import { WorkerCatLazy } from "../../shared/three-lazy";
+import { BlockTowerLazy, WorkerCatLazy } from "../../shared/three-lazy";
 import type { Mood } from "@hav/ui/three/worker-cat";
 import { type Activity, useActivity } from "./use-activity";
 import { useTasks } from "./use-tasks";
@@ -37,10 +37,19 @@ export function LogBody({ buildTasks }: { buildTasks: Fetched<TasksSummary> }) {
       {reduce ? <StackedScenes {...props} /> : <PinnedScenes {...props} />}
       <TaskDesks activity={activity} tasks={tasks} />
       <section data-surface="elevated" className="bg-surface px-4 py-24 text-fg sm:px-8 sm:py-32">
-        <div className="mx-auto grid max-w-5xl gap-12 sm:grid-cols-3">
-          <Stat value={doneCount} label="머지된 작업" />
-          <Stat value={stats.lines} label="오늘 남긴 기록 (최근 50줄 중)" />
-          <Stat value={stats.blocked} label="오늘 하네스가 막은 것" />
+        <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-[1fr_1.1fr]">
+          {/* 🧱 머지된 작업 하나 = 블록 하나 · 맨 위가 최신 (막힌 작업 표시는 작업별 기록이 없어 뺌 · docs/design.md) */}
+          <BlockTowerLazy count={doneCount} label={`블록 탑 — 머지된 작업 ${doneCount}개`} className="order-last h-[340px] w-full sm:h-[420px] md:order-first" />
+          <div>
+            <p className="text-title font-semibold tracking-tight">
+              한 블록 = 머지된 작업 하나.
+            </p>
+            <div className="mt-10 grid gap-10 sm:grid-cols-3 md:grid-cols-1">
+              <Stat value={doneCount} label="머지된 작업" />
+              <Stat value={stats.lines} label="오늘 남긴 기록 (최근 50줄 중)" />
+              <Stat value={stats.blocked} label="오늘 하네스가 막은 것" />
+            </div>
+          </div>
         </div>
       </section>
     </>

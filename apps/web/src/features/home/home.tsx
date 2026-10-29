@@ -12,7 +12,7 @@ import { SignalBadge } from "@hav/ui/signal-badge";
 import { Tabs } from "@hav/ui/tabs";
 import { SOURCE_NAME, currencyName, groupByRegion, headline, percentileText, rangeOf, rateText, toUnit } from "@hav/shared/currency";
 import { CurrencyFlag as Flag } from "@/shared/currency-flag";
-import { GlobeLazy, MoneyCatLazy, WorkerCatLazy } from "@/shared/three-lazy";
+import { BlockTowerLazy, GlobeLazy, MoneyCatLazy } from "@/shared/three-lazy";
 import { YearChart } from "@/shared/year-chart";
 import Link from "next/link";
 import { TripScenes } from "./trip-scenes";
@@ -213,7 +213,8 @@ export function Home({ latest, signals, levels, heroHistory, tasks }: HomeData) 
               만드는 과정 보기 →
             </Link>
           </Reveal>
-          <WorkerCatLazy mood="typing" className="h-[260px] w-full sm:h-[320px]" />
+          {/* 🧱 블록 탑 미리보기 — 머지된 작업 하나 = 블록 하나 · 맨 위 최신 블록이 떨어져 앉음 */}
+          <BlockTowerLazy count={done.length} label={`블록 탑 — 머지된 작업 ${done.length}개`} className="h-[300px] w-full sm:h-[360px]" />
         </div>
       </section>
 
