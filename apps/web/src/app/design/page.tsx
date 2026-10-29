@@ -76,7 +76,7 @@ export default function DesignPage() {
           <Button>바로 계산</Button>
         </div>
       </Section>
-      <Section id="characters" eyebrow="3D 캐릭터" title="렉돌 고양이 두 마리.">
+      <Section id="characters" eyebrow="3D 캐릭터" title="고양이 두 마리.">
         <Characters />
       </Section>
     </>

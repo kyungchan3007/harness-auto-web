@@ -7,7 +7,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Color, type Group, type PerspectiveCamera } from "three";
 import { Stage, tokenColor } from "./stage";
-import { type Mood, RagdollFigure } from "./ragdoll";
+import { CatFigure, type Mood } from "./cat-figure";
 
 export type StationsProps = {
   count: number;
@@ -93,7 +93,7 @@ function Walker({ target, mood, animate }: { target: number; mood: Mood; animate
   });
   return (
     <group ref={g} position={[target, -0.1, WALK_Z]} scale={0.55}>
-      <RagdollFigure mood={walking ? "walking" : mood} gear="hardhat" animate={animate} />
+      <CatFigure mood={walking ? "walking" : mood} gear="suit" animate={animate} />
     </group>
   );
 }
