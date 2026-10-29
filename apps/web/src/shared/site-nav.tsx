@@ -3,7 +3,7 @@
 import { NavBar } from "@hav/ui/nav-bar";
 import Link from "next/link";
 
-export type Page = "home" | "currencies" | "log";
+export type Page = "home" | "currencies" | "calc" | "log";
 
 export function SiteNav({ page }: { page: Page }) {
   return (
@@ -14,6 +14,7 @@ export function SiteNav({ page }: { page: Page }) {
       links={[
         { href: "/#today", label: "오늘 환율" },
         { href: "/currencies", label: "통화", current: page === "currencies" },
+        { href: "/calc", label: "직구 계산", current: page === "calc" },
         { href: "/log", label: "만드는 중", current: page === "log" },
       ]}
       action={

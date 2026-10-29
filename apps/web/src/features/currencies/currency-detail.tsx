@@ -53,6 +53,9 @@ export function CurrencyDetail({ code, rate, signal, history, problem }: DetailD
         <Stat label="1년 최고" value={range ? rateText({ baseRate: range.max.baseRate, unit: rate.unit }).value : "—"} sub={range && `${t.unit} · ${range.max.date}`} />
         <Stat label="환산 예시" value={sampleText(code, rate).split(" → ")[1]} sub={sampleText(code, rate).split(" → ")[0]} />
       </dl>
+      <a href={`/calc?currency=${code}`} className="mt-8 inline-flex text-sm font-semibold text-accent hover:underline">
+        이 통화로 직구 계산하기 →
+      </a>
     </div>
   );
 }
