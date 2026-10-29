@@ -8,11 +8,20 @@ const WRITE_CMDS = new Set(["cp", "mv", "mkdir", "touch", "rm", "ln", "install",
 const expandHome = (p) => p.replace(/^(~|\$HOME|\$\{HOME\})(?=\/|$)/, homedir());
 const strip = (t) => t.replace(/^["']|["';)]+$/g, "");
 
-/** 경로가 프로젝트 밖인가 (/dev/* 는 허용) */
+/** 이 프로젝트의 에이전트 기억 폴더 — ~/.claude/projects/(저장소 경로의 기호를 - 로)/memory (사용자 승인 2026-10-29: "규칙에 기억 폴더를 예외로 넣어") */
+export const memoryDir = (root) => resolve(homedir(), ".claude", "projects", resolve(root).replace(/[^A-Za-z0-9]/g, "-"), "memory");
+
+const inside = (abs, dir) => {
+  const rel = relative(dir, abs);
+  return !rel.startsWith("..") && !isAbsolute(rel);
+};
+
+/** 경로가 프로젝트 밖인가 (/dev/* · 이 프로젝트의 기억 폴더는 허용) */
 export function isOutside(path, root, cwd = root) {
   const p = expandHome(strip(path));
   if (!p || p.startsWith("/dev/")) return false;
   const abs = isAbsolute(p) ? p : resolve(cwd, p);
+  if (inside(abs, memoryDir(root))) return false;
   const rel = relative(root, abs);
   return rel.startsWith("..") || isAbsolute(rel);
 }
