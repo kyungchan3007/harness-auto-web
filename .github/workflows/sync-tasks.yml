@@ -8,6 +8,9 @@ on:
     types: [completed]
   issues:
     types: [opened, edited, reopened, closed]
+  pull_request: # PR 이 머지되면 바로 — 화면만 바꾼 PR 은 deploy-api 가 안 돌아 "끝" 이 안 바뀌었음 (작업 0066)
+    types: [closed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -21,7 +24,7 @@ concurrency:
 
 jobs:
   sync:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

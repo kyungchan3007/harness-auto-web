@@ -34,11 +34,22 @@ export function stageOf(e: ActivityEvent): Stage {
   }
 }
 
+/** 작업 번호가 빠진 배포 기록(머지 뒤 main 으로 돌아와 남은 "PR 머지" 등)은 바로 앞(더 오래된) 기록의 작업으로 셈
+ *  훅이 고쳐지기 전(작업 0066) 기록도 맞게 보이게 — 다른 작업이 끼어 있으면 붙이지 않음 */
+export function withTasks(events: ActivityEvent[]): ActivityEvent[] {
+  return events.map((e, i) => {
+    if (e.task || e.kind !== "pr" || !SHIP_LABELS.has(e.label)) return e;
+    const before = events.slice(i + 1).find((x) => x.task);
+    return before ? { ...e, task: before.task } : e;
+  });
+}
+
 /** events 는 최신부터 (useActivity) · done 은 머지된 PR (useTasks) */
 export function deskState(events: ActivityEvent[], done: DoneTask[]): DeskState {
-  const task = events.find((e) => e.task)?.task ?? null;
+  const all = withTasks(events);
+  const task = all.find((e) => e.task)?.task ?? null;
   if (!task) return { task: null, stage: 0, finished: false };
   if (done.some((d) => d.task === task)) return { task, stage: 3, finished: true };
-  const stage = events.filter((e) => e.task === task).reduce<Stage>((m, e) => Math.max(m, stageOf(e)) as Stage, 0);
+  const stage = all.filter((e) => e.task === task).reduce<Stage>((m, e) => Math.max(m, stageOf(e)) as Stage, 0);
   return { task, stage, finished: false };
 }
