@@ -1,6 +1,6 @@
 // D1 테이블 — 원본은 여기 하나 (마이그레이션은 drizzle-kit 이 이 파일에서 만든다)
 // Drizzle 은 D1 · Postgres 둘 다 지원 → 나중에 옮길 때 이 파일의 sqlite-core 만 pg-core 로 바꾼다
-import { integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 /** 일별 환율 (원화 기준). 받지 못한 날은 행을 만들지 않는다 (FX-02) */
 export const fxRates = sqliteTable(
@@ -15,7 +15,8 @@ export const fxRates = sqliteTable(
     source: text("source", { enum: ["koreaexim", "frankfurter"] }).notNull(), // FX-01
     fetchedAt: text("fetched_at").notNull(),
   },
-  (t) => [primaryKey({ columns: [t.date, t.currency] })],
+  // (통화, 날짜) 색인 — 기본 키(날짜, 통화)로는 "한 통화의 1년" 을 찾을 때 1년치 모든 통화를 읽어서 D1 하루 읽기 한도를 넘겼음 (작업 0077)
+  (t) => [primaryKey({ columns: [t.date, t.currency] }), index("fx_rates_currency_date").on(t.currency, t.date)],
 );
 
 /** 나라별 물가 수준 (미국 = 1, 연 단위). 출처 없는 나라는 넣지 않는다 (TRV-02) */
