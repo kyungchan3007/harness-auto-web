@@ -1,12 +1,12 @@
 "use client";
 
-// 🐱 렉돌 고양이 — three.js 도형만 (모델 파일 없음) · 실 포인트 미티드 (2026-10-29 사용자 확인: "색갈은 A")
-//   크림 몸 · 진갈색 얼굴 가면 · 귀 · 꼬리 · 흰 턱받이 · 흰 앞발(미티드) · 크고 파란 눈 · 복슬한 볼
-// 방방 뛰지 않고 고양이답게 (2026-10-29 사용자: "기어 다니고 · 그루밍 · 앉아서") — 몸은 "자세"를 오가며 움직임
+// 🐱 고양이 몸 — three.js 도형만 (모델 파일 없음) · 장난감 비율 (큰 머리 · 반짝이는 큰 눈 · 말랑한 몸)
+//   2026-10-29 사용자가 참고 그림 두 장을 줌: "참고 2는 만드는중 · 참고 1은 직구계산"
+//   gear "suit" = 작업 고양이 (참고 2) — 하얀 고양이 · 민트 후드 작업복 · 지퍼 · 주황 신발 · 크고 짙은 눈
+//   gear "coin" = 돈 든 고양이 (참고 1) — 회색 · 흰 아기 고양이 · 초록 눈 · 황금 금화를 안고 앉음
+// 방방 뛰지 않고 고양이답게 (사용자: "기어 다니고 · 그루밍 · 앉아서") — 몸은 "자세"를 오가며 움직임
 //   자세: 앉기 · 식빵 · 서기(걷기) · 기지개 · 말고 자기 · 등 세우기 · 삐쳐 앉기 → 부드럽게 바뀜 (lerp)
 // 표정(mood) 이름과 차림(gear)만 받고, 무엇을 보고 고를지는 쓰는 쪽이 정함
-//   gear "hardhat" = 작업 고양이 (노란 안전모 · 이마 램프 — 통과 청록 · 막힘 · 실패 빨강)
-//   gear "coin"    = 돈 든 고양이 (₩ 금화를 안고 앉음 · 한도를 넘으면 세금 동전이 굴러감)
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { Color, type Group, type Mesh, type MeshBasicMaterial } from "three";
@@ -15,7 +15,7 @@ import { tokenColor } from "./stage";
 
 export const MOODS = ["typing", "looking", "working", "browsing", "happy", "startled", "sad", "sleeping", "neutral", "walking", "worried"] as const;
 export type Mood = (typeof MOODS)[number];
-export type Gear = "hardhat" | "coin";
+export type Gear = "suit" | "coin";
 
 /** 움직임 줄이기면 이 시각의 자세로 멈춰 그림 */
 export const STILL_T = 1.2;
@@ -164,67 +164,80 @@ function poseFor(mood: Mood, gear: Gear, t: number): Pose {
   }
 }
 
-function useColors() {
-  return useMemo(
-    () => ({
-      cream: new Color("#f3e9da"),
-      white: new Color("#fffdf8"),
-      point: new Color("#6b4a33"),
-      // 가면은 연하고 부드럽게 — 진하면 도둑 가면처럼 무서워 보였음 (2026-10-29 사용자: "너무 무섭다")
-      mask: new Color("#a07a5c"),
-      inner: new Color("#e9a6a6"),
-      iris: new Color("#4a8fe0"),
-      pupil: new Color("#10243d"),
-      nose: new Color("#e58b9a"),
-      blush: new Color("#ff9fb8"),
-      hat: new Color("#ffc928"),
-      hatDark: new Color("#e0a800"),
+function useColors(gear: Gear) {
+  return useMemo(() => {
+    const suit = gear === "suit";
+    return {
+      white: new Color("#fbf8f3"),
+      coat: new Color("#a3a6ae"), // 참고 1 회색
+      stripe: new Color("#8a8d96"),
+      inner: new Color("#f4a9b8"),
+      iris: new Color(suit ? "#3b2b26" : "#8fb339"), // 참고 2 짙은 눈 · 참고 1 초록 눈
+      pupil: new Color("#140f0d"),
+      nose: new Color("#f08aa0"),
+      blush: new Color("#ffb2c4"),
+      line: new Color("#6b5a55"),
+      whisker: new Color("#d9d4cf"),
+      suit: new Color("#8fd6c9"), // 참고 2 민트
+      suitLight: new Color("#b5e6dc"),
+      suitDark: new Color("#6fbfb1"),
+      zip: new Color("#f2a06e"),
+      shoe: new Color("#f28a6b"), // 참고 2 주황 신발
       gold: new Color("#ffbf1f"),
       goldRim: new Color("#e39b00"),
       goldInk: new Color("#8a5200"),
       accent: new Color(tokenColor("--hav-accent", "#4ff0e0")),
-      red: new Color(tokenColor("--hav-expensive", "#ff5a5f")),
       blue: new Color(tokenColor("--hav-cheap", "#4c9bff")),
       grey: new Color(tokenColor("--hav-normal", "#c7c7cc")),
       dark: new Color(tokenColor("--hav-surface-2", "#1d1d1f")),
-    }),
-    [],
-  );
+    };
+  }, [gear]);
 }
 type Colors = ReturnType<typeof useColors>;
 
-/** 눈 — 큰 아기 고양이 눈 (동공 크게 · 반짝임 둘) · smile 이면 ^ 모양으로 감음 (가늘게 뜨면 째려보는 것 같았음) */
-function Eye({ x, eye, pupil, smile, c }: { x: number; eye: React.Ref<Group>; pupil: React.Ref<Group>; smile: boolean; c: Colors }) {
+/** 눈 — 크고 반짝이는 장난감 눈 (참고 그림) · 색 테두리 + 큰 동공 + 반짝임 셋 · smile 이면 ^ 모양으로 감음 */
+function Eye({ x, eye, pupil, shut, smile, c }: { x: number; eye: React.Ref<Group>; pupil: React.Ref<Group>; shut: React.Ref<Mesh>; smile: boolean; c: Colors }) {
   if (smile)
     return (
-      <group position={[x, 0.02, 0.43]}>
+      <group position={[x, -0.01, 0.39]}>
         <mesh>
-          <torusGeometry args={[0.062, 0.016, 8, 20, Math.PI]} />
-          <meshBasicMaterial color={c.point} />
+          <torusGeometry args={[0.07, 0.014, 8, 20, Math.PI]} />
+          <meshBasicMaterial color={c.line} />
         </mesh>
       </group>
     );
   return (
-    <group ref={eye} position={[x, 0.03, 0.4]}>
-      <mesh scale={[1, 1.08, 0.5]}>
-        <sphereGeometry args={[0.1, 24, 24]} />
-        <meshStandardMaterial color={c.iris} roughness={0.2} />
+    <>
+      {/* 감은 눈 ‿ — 반쯤 감으면 비웃는 것처럼 보여서, 감을 땐 끝까지 감음 (useFrame 이 보이기를 바꿈) */}
+      <mesh ref={shut} position={[x, -0.02, 0.39]} rotation={[0, 0, Math.PI]} visible={false}>
+        <torusGeometry args={[0.07, 0.013, 8, 20, Math.PI]} />
+        <meshBasicMaterial color={c.line} />
+      </mesh>
+    <group ref={eye} position={[x, -0.02, 0.33]}>
+      <mesh scale={[1, 1.1, 0.55]}>
+        <sphereGeometry args={[0.115, 32, 32]} />
+        <meshStandardMaterial color={c.iris} roughness={0.08} metalness={0.1} />
       </mesh>
       <group ref={pupil}>
-        <mesh position={[0, -0.005, 0.035]} scale={[0.95, 1.05, 0.5]}>
-          <sphereGeometry args={[0.07, 18, 18]} />
-          <meshBasicMaterial color={c.pupil} />
+        <mesh position={[0, -0.005, 0.03]} scale={[1, 1.08, 0.55]}>
+          <sphereGeometry args={[0.088, 24, 24]} />
+          <meshStandardMaterial color={c.pupil} roughness={0.05} />
         </mesh>
-        <mesh position={[0.03, 0.04, 0.07]}>
-          <sphereGeometry args={[0.03, 12, 12]} />
+        <mesh position={[0.035, 0.045, 0.075]}>
+          <sphereGeometry args={[0.036, 14, 14]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
-        <mesh position={[-0.03, -0.035, 0.07]}>
-          <sphereGeometry args={[0.013, 10, 10]} />
+        <mesh position={[-0.035, -0.04, 0.075]}>
+          <sphereGeometry args={[0.016, 10, 10]} />
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+        <mesh position={[0.05, -0.03, 0.07]}>
+          <sphereGeometry args={[0.009, 8, 8]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
       </group>
     </group>
+    </>
   );
 }
 
@@ -248,24 +261,24 @@ function Zee({ color }: { color: Color }) {
 }
 
 /** 다리 하나 — 엉덩이 · 어깨를 축으로 아래로 · len 0 이면 숨음 (식빵 · 말고 자기) */
-function LegMesh({ leg, c, paw }: { leg: React.Ref<Group>; c: Colors; paw: Color }) {
+function LegMesh({ leg, shin, paw }: { leg: React.Ref<Group>; shin: Color; paw: Color }) {
   return (
     <group ref={leg}>
       <mesh name="shin">
-        <cylinderGeometry args={[0.065, 0.06, 1, 12]} />
-        <meshStandardMaterial color={c.cream} roughness={0.85} />
+        <cylinderGeometry args={[0.065, 0.06, 1, 14]} />
+        <meshStandardMaterial color={shin} roughness={0.8} />
       </mesh>
       <mesh name="paw" scale={[1, 0.75, 1.25]}>
         <sphereGeometry args={[0.08, 16, 16]} />
-        <meshStandardMaterial color={paw} roughness={0.85} />
+        <meshStandardMaterial color={paw} roughness={0.7} />
       </mesh>
     </group>
   );
 }
 
 /** 고양이 몸 — 다른 장면(stations 등)에서도 씀 · 위치 · 크기 · 걷는 방향은 바깥 group 이 정함 */
-export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear; animate: boolean }) {
-  const c = useColors();
+export function CatFigure({ mood, gear, animate }: { mood: Mood; gear: Gear; animate: boolean }) {
+  const c = useColors(gear);
   const root = useRef<Group>(null);
   const torso = useRef<Group>(null);
   const head = useRef<Group>(null);
@@ -275,6 +288,8 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
   const eyeR = useRef<Group>(null);
   const pupilL = useRef<Group>(null);
   const pupilR = useRef<Group>(null);
+  const shutL = useRef<Mesh>(null);
+  const shutR = useRef<Mesh>(null);
   const mouthOpen = useRef<Mesh>(null);
   const legFL = useRef<Group>(null);
   const legFR = useRef<Group>(null);
@@ -438,7 +453,13 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
     earL.current?.rotation.set(0, 0, 0.35 - earsL);
     earR.current?.rotation.set(0, 0, -0.35 + earsR);
     const blink = slowBlink ? 0.12 : eyeOpen;
-    for (const e of [eyeL.current, eyeR.current]) e?.scale.set(1, Math.max(0.05, blink), 1);
+    // 반쯤 감기는 없음 — 0.55 아래면 감은 눈 ‿ · 위면 뜬 눈 (조금 가늘게만)
+    const closed = blink < 0.55;
+    for (const e of [eyeL.current, eyeR.current]) if (e) {
+      e.visible = !closed;
+      e.scale.set(1, Math.max(0.85, blink), 1);
+    }
+    for (const m of [shutL.current, shutR.current]) if (m) m.visible = closed;
     for (const q of [pupilL.current, pupilR.current]) q?.position.set(look[0], look[1], 0);
     if (mouthOpen.current) mouthOpen.current.scale.setScalar(Math.max(0.001, yawn));
 
@@ -497,122 +518,150 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
     }
   });
 
-  // 웃을 때 · 꾹꾹이할 때는 ^ ^ 로 감은 눈 (가늘게 뜨면 째려보는 것 같았음)
-  const smile = mood === "happy" || (mood === "typing" && gear === "hardhat");
+  // 웃을 때 · 꾹꾹이할 때는 ^ ^ 로 감은 눈
+  const smile = mood === "happy" || (mood === "typing" && gear === "suit");
+  const suit = gear === "suit";
   return (
     <group position={[0, -0.05, 0]}>
       <group ref={root}>
-        {/* 몸통 — 앉으면 앞이 들림 */}
+        {/* 몸통 — 작업 고양이는 민트 작업복 · 아기 고양이는 회색 등 */}
         <group ref={torso}>
-          <mesh scale={[0.9, 0.85, 1.35]}>
-            <sphereGeometry args={[0.3, 32, 32]} />
-            <meshStandardMaterial color={c.cream} roughness={0.85} />
+          <mesh scale={[0.9, 0.85, 1.3]}>
+            <sphereGeometry args={[0.27, 32, 32]} />
+            <meshStandardMaterial color={suit ? c.suit : c.coat} roughness={0.75} />
           </mesh>
-          {/* 흰 턱받이 (몸 앞 아래) */}
-          <mesh position={[0, -0.04, 0.24]} scale={[0.75, 0.75, 0.75]}>
-            <sphereGeometry args={[0.24, 24, 24]} />
-            <meshStandardMaterial color={c.white} roughness={0.9} />
+          {/* 가슴 — 아기 고양이는 복슬한 흰 가슴 · 작업복은 밝은 민트 + 지퍼 */}
+          <mesh position={[0, -0.03, 0.21]} scale={[0.72, 0.78, 0.72]}>
+            <sphereGeometry args={[0.23, 24, 24]} />
+            <meshStandardMaterial color={suit ? c.suitLight : c.white} roughness={0.85} />
           </mesh>
+          {suit && (
+            <>
+              <mesh position={[0, 0.0, 0.375]} rotation={[-0.1, 0, 0]}>
+                <boxGeometry args={[0.022, 0.26, 0.012]} />
+                <meshStandardMaterial color={c.zip} roughness={0.4} />
+              </mesh>
+              <mesh position={[0, 0.12, 0.37]}>
+                <sphereGeometry args={[0.022, 10, 10]} />
+                <meshStandardMaterial color={c.zip} roughness={0.4} />
+              </mesh>
+              {/* 주머니 */}
+              <mesh position={[-0.1, -0.08, 0.34]} rotation={[0, -0.25, 0]}>
+                <boxGeometry args={[0.07, 0.06, 0.01]} />
+                <meshStandardMaterial color={c.suitDark} roughness={0.7} />
+              </mesh>
+            </>
+          )}
         </group>
 
-        {/* 앉을 때 옆으로 보이는 넓적다리 + 흰 뒷발 */}
+        {/* 앉을 때 옆으로 보이는 넓적다리 + 뒷발 (작업복이면 바지 · 주황 신발) */}
         <group ref={haunches}>
           {[-1, 1].map((s) => (
             <group key={s}>
-              <mesh position={[s * 0.2, -0.47, -0.04]} scale={[0.85, 0.95, 1.15]}>
-                <sphereGeometry args={[0.17, 20, 20]} />
-                <meshStandardMaterial color={c.cream} roughness={0.85} />
+              <mesh position={[s * 0.18, -0.48, -0.04]} scale={[0.85, 0.9, 1.1]}>
+                <sphereGeometry args={[0.15, 20, 20]} />
+                <meshStandardMaterial color={suit ? c.suit : c.coat} roughness={0.8} />
               </mesh>
-              <mesh position={[s * 0.2, -0.6, 0.13]} scale={[0.95, 0.55, 1.4]}>
+              <mesh position={[s * 0.18, -0.6, 0.12]} scale={[0.95, 0.6, 1.35]}>
                 <sphereGeometry args={[0.08, 16, 16]} />
-                <meshStandardMaterial color={c.white} roughness={0.85} />
+                <meshStandardMaterial color={suit ? c.shoe : c.white} roughness={suit ? 0.5 : 0.85} />
               </mesh>
             </group>
           ))}
         </group>
 
-        <LegMesh leg={legFL} c={c} paw={c.white} />
-        <LegMesh leg={legFR} c={c} paw={c.white} />
-        <LegMesh leg={legHL} c={c} paw={c.white} />
-        <LegMesh leg={legHR} c={c} paw={c.white} />
+        <LegMesh leg={legFL} shin={suit ? c.suit : c.white} paw={c.white} />
+        <LegMesh leg={legFR} shin={suit ? c.suit : c.white} paw={c.white} />
+        <LegMesh leg={legHL} shin={suit ? c.suit : c.coat} paw={suit ? c.shoe : c.white} />
+        <LegMesh leg={legHR} shin={suit ? c.suit : c.coat} paw={suit ? c.shoe : c.white} />
 
-        {/* 두꺼운 꼬리 — 꼬리뿌리에서 뻗음 · 끝으로 갈수록 진함 */}
+        {/* 꼬리 — 하얀 고양이는 흰 꼬리 · 아기 고양이는 회색에 진한 줄 */}
         <group ref={tail}>
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <mesh key={i} position={[0, i * 0.075, -i * 0.04]}>
-              <sphereGeometry args={[0.085 + (i > 3 ? 0.008 : 0), 16, 16]} />
-              <meshStandardMaterial color={i < 2 ? c.mask : c.point} roughness={0.9} />
+            <mesh key={i} position={[0, i * 0.07, -i * 0.035]}>
+              <sphereGeometry args={[0.075 + (i > 3 ? 0.006 : 0), 16, 16]} />
+              <meshStandardMaterial color={suit ? c.white : i % 2 ? c.stripe : c.coat} roughness={0.9} />
             </mesh>
           ))}
         </group>
 
-        {/* 머리 — 그룹 원점 = 머리 가운데 */}
+        {/* 머리 — 크게 (장난감 비율) · 그룹 원점 = 머리 가운데 */}
         <group ref={head}>
-          <mesh scale={[1.12, 0.94, 0.95]}>
-            <sphereGeometry args={[0.38, 32, 32]} />
-            <meshStandardMaterial color={c.cream} roughness={0.85} />
-          </mesh>
-          {[-0.28, 0.28].map((x) => (
-            <mesh key={x} position={[x, -0.14, 0.1]} scale={[1, 0.85, 0.9]}>
-              <sphereGeometry args={[0.17, 20, 20]} />
-              <meshStandardMaterial color={c.cream} roughness={0.85} />
+          <group scale={1.12}>
+            <mesh scale={[1.12, 0.96, 0.96]}>
+              <sphereGeometry args={[0.38, 40, 40]} />
+              <meshStandardMaterial color={c.white} roughness={0.8} />
             </mesh>
-          ))}
-          <mesh position={[0, 0.02, 0.24]} scale={[0.98, 0.66, 0.58]}>
-            <sphereGeometry args={[0.29, 28, 28]} />
-            <meshStandardMaterial color={c.mask} roughness={0.8} />
-          </mesh>
-          <mesh position={[0, -0.11, 0.35]} scale={[1.35, 0.85, 0.7]}>
-            <sphereGeometry args={[0.115, 20, 20]} />
-            <meshStandardMaterial color={c.white} roughness={0.8} />
-          </mesh>
-          <Eye x={-0.145} eye={eyeL} pupil={pupilL} smile={smile} c={c} />
-          <Eye x={0.145} eye={eyeR} pupil={pupilR} smile={smile} c={c} />
-          <mesh position={[0, -0.06, 0.43]} rotation={[0.3, 0, 0]} scale={[1.3, 0.8, 0.7]}>
-            <sphereGeometry args={[0.027, 12, 12]} />
-            <meshStandardMaterial color={c.nose} roughness={0.4} />
-          </mesh>
-          <Mouth mood={mood} c={c} />
-          {/* 하품할 때 벌어지는 입 */}
-          <mesh ref={mouthOpen} position={[0, -0.16, 0.42]} scale={0.001}>
-            <sphereGeometry args={[0.045, 14, 14]} />
-            <meshBasicMaterial color="#7a2f3a" />
-          </mesh>
-          {[-0.23, 0.23].map((x) => (
-            <mesh key={x} position={[x, -0.1, 0.36]} scale={[1.35, 0.7, 0.3]}>
-              <sphereGeometry args={[0.058, 14, 14]} />
-              <meshBasicMaterial color={c.blush} transparent opacity={0.85} />
+            {!suit && (
+              <>
+                {/* 아기 고양이: 머리 위 회색 · 이마 줄무늬 */}
+                <mesh scale={[1.125, 0.965, 0.965]} rotation={[-0.35, 0, 0]}>
+                  <sphereGeometry args={[0.381, 40, 20, 0, Math.PI * 2, 0, 1.05]} />
+                  <meshStandardMaterial color={c.coat} roughness={0.85} />
+                </mesh>
+                {[-0.07, 0, 0.07].map((x) => (
+                  <mesh key={x} position={[x, 0.24, 0.27]} rotation={[-0.75, 0, x * 2]}>
+                    <boxGeometry args={[0.025, 0.11, 0.01]} />
+                    <meshStandardMaterial color={c.stripe} roughness={0.85} />
+                  </mesh>
+                ))}
+              </>
+            )}
+            {/* 복슬한 볼 */}
+            {[-0.27, 0.27].map((x) => (
+              <mesh key={x} position={[x, -0.14, 0.1]} scale={[1, 0.82, 0.9]}>
+                <sphereGeometry args={[0.16, 20, 20]} />
+                <meshStandardMaterial color={c.white} roughness={0.85} />
+              </mesh>
+            ))}
+            <Eye x={-0.16} eye={eyeL} pupil={pupilL} shut={shutL} smile={smile} c={c} />
+            <Eye x={0.16} eye={eyeR} pupil={pupilR} shut={shutR} smile={smile} c={c} />
+            <mesh position={[0, -0.09, 0.4]} rotation={[0.3, 0, 0]} scale={[1.3, 0.8, 0.7]}>
+              <sphereGeometry args={[0.024, 12, 12]} />
+              <meshStandardMaterial color={c.nose} roughness={0.4} />
             </mesh>
-          ))}
-          {[-1, 1].flatMap((s) =>
-            [-0.05, 0.03].map((dy) => (
-              <mesh key={`${s}${dy}`} position={[s * 0.26, -0.11 + dy, 0.37]} rotation={[0, 0, s * dy * 3]}>
-                <boxGeometry args={[0.19, 0.007, 0.007]} />
-                <meshBasicMaterial color={c.white} />
+            <Mouth mood={mood} c={c} />
+            <mesh ref={mouthOpen} position={[0, -0.17, 0.39]} scale={0.001}>
+              <sphereGeometry args={[0.04, 14, 14]} />
+              <meshBasicMaterial color="#c75a6c" />
+            </mesh>
+            {[-0.25, 0.25].map((x) => (
+              <mesh key={x} position={[x, -0.1, 0.33]} scale={[1.4, 0.75, 0.3]}>
+                <sphereGeometry args={[0.058, 14, 14]} />
+                <meshBasicMaterial color={c.blush} transparent opacity={0.8} />
               </mesh>
-            )),
-          )}
-          {[
-            { ref: earL, x: -0.24 },
-            { ref: earR, x: 0.24 },
-          ].map(({ ref, x }) => (
-            <group key={x} ref={ref} position={[x, 0.25, 0]}>
-              <mesh position={[0, 0.1, 0]}>
-                <coneGeometry args={[0.125, 0.25, 4]} />
-                <meshStandardMaterial color={c.point} roughness={0.8} />
-              </mesh>
-              <mesh position={[0, 0.08, 0.05]} scale={[0.6, 0.7, 0.4]}>
-                <coneGeometry args={[0.125, 0.25, 4]} />
-                <meshStandardMaterial color={c.inner} roughness={0.8} />
-              </mesh>
-            </group>
-          ))}
-          {gear === "hardhat" && <HardHat mood={mood} c={c} />}
+            ))}
+            {[-1, 1].flatMap((s) =>
+              [-0.04, 0.02].map((dy) => (
+                <mesh key={`${s}${dy}`} position={[s * 0.3, -0.12 + dy, 0.31]} rotation={[0, s * -0.4, s * dy * 3]}>
+                  <boxGeometry args={[0.2, 0.005, 0.005]} />
+                  <meshBasicMaterial color={suit ? c.whisker : c.white} />
+                </mesh>
+              )),
+            )}
+            {/* 귀 — 분홍 안쪽 · 아기 고양이는 회색 바깥 */}
+            {[
+              { ref: earL, x: -0.24 },
+              { ref: earR, x: 0.24 },
+            ].map(({ ref, x }) => (
+              <group key={x} ref={ref} position={[x, 0.24, -0.02]}>
+                <mesh position={[0, 0.11, 0]}>
+                  <coneGeometry args={[0.13, 0.27, 24]} />
+                  <meshStandardMaterial color={suit ? c.white : c.coat} roughness={0.8} />
+                </mesh>
+                <mesh position={[0, 0.09, 0.05]} scale={[0.62, 0.72, 0.4]}>
+                  <coneGeometry args={[0.13, 0.27, 24]} />
+                  <meshStandardMaterial color={c.inner} roughness={0.8} />
+                </mesh>
+              </group>
+            ))}
+            {suit && <Hood c={c} />}
+          </group>
         </group>
 
         {gear === "coin" && <HugCoin c={c} />}
-        {gear === "hardhat" && <Props mood={mood} c={c} />}
-        {(mood === "worried" || (mood === "sad" && gear === "hardhat")) && (
+        {suit && <Props mood={mood} c={c} />}
+        {(mood === "worried" || (mood === "sad" && suit)) && (
           <mesh ref={sweat} scale={[0.8, 1.3, 0.8]}>
             <sphereGeometry args={[0.04, 14, 14]} />
             <meshBasicMaterial color={c.blue} transparent />
@@ -642,20 +691,20 @@ export function RagdollFigure({ mood, gear, animate }: { mood: Mood; gear: Gear;
 }
 
 function Mouth({ mood, c }: { mood: Mood; c: Colors }) {
-  const m = <meshBasicMaterial color={c.point} />;
+  const m = <meshBasicMaterial color={c.line} />;
   if (mood === "sad" || mood === "worried" || mood === "startled")
     return (
-      <mesh position={[0, -0.17, 0.425]}>
-        <torusGeometry args={[0.033, 0.01, 8, 16, Math.PI]} />
+      <mesh position={[0, -0.16, 0.395]}>
+        <torusGeometry args={[0.028, 0.008, 8, 16, Math.PI]} />
         {m}
       </mesh>
     );
   // ω 입 — 반원 두 개
   return (
-    <group position={[0, -0.125, 0.43]} rotation={[0, 0, Math.PI]}>
-      {[-0.027, 0.027].map((x) => (
+    <group position={[0, -0.125, 0.4]} rotation={[0, 0, Math.PI]}>
+      {[-0.024, 0.024].map((x) => (
         <mesh key={x} position={[x, 0, 0]}>
-          <torusGeometry args={[0.026, 0.009, 8, 16, Math.PI]} />
+          <torusGeometry args={[0.023, 0.007, 8, 16, Math.PI]} />
           {m}
         </mesh>
       ))}
@@ -663,33 +712,24 @@ function Mouth({ mood, c }: { mood: Mood; c: Colors }) {
   );
 }
 
-/** 노란 안전모 · 이마 램프 — 통과 · 커밋은 청록 · 막힘 · 실패는 빨강 · 그 밖은 따뜻한 노랑 */
-function HardHat({ mood, c }: { mood: Mood; c: Colors }) {
-  const lamp = mood === "happy" ? c.accent : mood === "startled" || mood === "sad" ? c.red : new Color("#fff3b0");
+/** 민트 후드 — 얼굴만 열려 있고 머리 뒤 · 위를 덮음 · 이마 위 주황 단추 (참고 그림 2) */
+function Hood({ c }: { c: Colors }) {
   return (
-    <group position={[0, 0.2, 0]}>
-      <mesh scale={[1.12, 0.78, 1.08]}>
-        <sphereGeometry args={[0.34, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color={c.hat} roughness={0.35} metalness={0.05} />
+    <group>
+      {/* 얼굴 쪽(+z)을 비운 공: phi 는 -x 에서 시작 → +z 는 π/2 · 그 둘레 1.9 라디안을 비움 */}
+      <mesh scale={[1.16, 1.0, 1.0]}>
+        <sphereGeometry args={[0.4, 40, 30, Math.PI / 2 + 0.95, Math.PI * 2 - 1.9, 0, Math.PI * 0.78]} />
+        <meshStandardMaterial color={c.suit} roughness={0.75} side={2} />
       </mesh>
-      <mesh scale={[0.18, 0.8, 1.1]}>
-        <sphereGeometry args={[0.35, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color={c.hatDark} roughness={0.35} />
+      {/* 얼굴 둘레 테두리 */}
+      <mesh position={[0, 0.0, 0.27]} rotation={[0.08, 0, 0]} scale={[1.2, 1.05, 1]}>
+        <torusGeometry args={[0.3, 0.035, 12, 40]} />
+        <meshStandardMaterial color={c.suitLight} roughness={0.7} />
       </mesh>
-      <mesh position={[0, 0.005, 0.05]}>
-        <cylinderGeometry args={[0.43, 0.43, 0.03, 40]} />
-        <meshStandardMaterial color={c.hatDark} roughness={0.4} />
+      <mesh position={[0, 0.36, 0.14]} scale={[1, 0.45, 1]}>
+        <sphereGeometry args={[0.055, 16, 16]} />
+        <meshStandardMaterial color={c.shoe} roughness={0.5} />
       </mesh>
-      <group position={[0, 0.13, 0.35]} rotation={[Math.PI / 2 - 0.35, 0, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.065, 0.075, 0.06, 20]} />
-          <meshStandardMaterial color={c.dark} roughness={0.4} />
-        </mesh>
-        <mesh position={[0, 0.035, 0]}>
-          <cylinderGeometry args={[0.052, 0.052, 0.015, 20]} />
-          <meshBasicMaterial color={lamp} />
-        </mesh>
-      </group>
     </group>
   );
 }
