@@ -54,7 +54,7 @@ describe("오늘 숫자 (한국 날짜)", () => {
 });
 
 describe("지난 작업 고르기", () => {
-  const sum = (n: number, syncedAt: string | null) => ({ names: {}, done: Array.from({ length: n }, (_, i) => ({ number: i + 1, task: null, name: "x", url: "u", mergedAt: "2026-10-28T00:00:00.000Z" })), syncedAt });
+  const sum = (n: number, syncedAt: string | null) => ({ names: {}, done: Array.from({ length: n }, (_, i) => ({ number: i + 1, task: null, name: "x", url: "u", mergedAt: "2026-10-28T00:00:00.000Z" })), syncedAt, snags: {}, snagsSince: null });
 
   it("브라우저에서 새로 받은 게 있으면 그것 · 실패면 빌드 때 것", () => {
     const build = { ok: true as const, data: sum(1, "2026-10-28T10:00:00.000Z") };

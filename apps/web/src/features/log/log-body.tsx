@@ -4,7 +4,7 @@
 // 패널은 화면에 고정하고 스크롤로 장면만 바뀜 (참고 페이지 방식) · 움직임 줄이기면 장면을 차례로 쌓음
 import { CountUp } from "@hav/ui/count-up";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
-import type { TasksSummary } from "@hav/shared/tasks";
+import { type TasksSummary, blockMarks, snagText } from "@hav/shared/tasks";
 import { useRef, useState } from "react";
 import type { Fetched } from "../../shared/api";
 import { TaskDesks } from "./task-desks";
@@ -27,6 +27,7 @@ export function LogBody({ buildTasks }: { buildTasks: Fetched<TasksSummary> }) {
   const tasks = useTasks(buildTasks);
   const names = tasks.ok ? tasks.data.names : {};
   const doneCount = tasks.ok ? tasks.data.done.length : 0;
+  const marks = tasks.ok ? blockMarks(tasks.data.done, tasks.data.snags) : [];
   const stats = todayStats(activity.events, activity.now);
   const reduce = useReducedMotion();
   const mood = moodOf(liveStatus(activity.events, activity.now));
@@ -39,7 +40,13 @@ export function LogBody({ buildTasks }: { buildTasks: Fetched<TasksSummary> }) {
       <section data-surface="elevated" className="bg-surface px-4 py-24 text-fg sm:px-8 sm:py-32">
         <div className="mx-auto grid max-w-5xl items-center gap-12 md:grid-cols-[1fr_1.1fr]">
           {/* 🧱 머지된 작업 하나 = 블록 하나 · 맨 위가 최신 (막힌 작업 표시는 작업별 기록이 없어 뺌 · docs/design.md) */}
-          <BlockTowerLazy count={doneCount} label={`블록 탑 — 머지된 작업 ${doneCount}개`} className="order-last h-[340px] w-full sm:h-[420px] md:order-first" />
+          <div className="order-last md:order-first">
+            <BlockTowerLazy count={doneCount} marks={marks} label={`블록 탑 — 머지된 작업 ${doneCount}개 · ${snagText(marks, tasks.ok ? tasks.data.snagsSince : null)}`} className="h-[340px] w-full sm:h-[420px]" />
+            <p className="mt-2 flex items-start justify-center gap-2 text-center text-xs text-fg-2">
+              <span aria-hidden className="mt-1 inline-block size-2 shrink-0 rounded-sm bg-expensive" />
+              {snagText(marks, tasks.ok ? tasks.data.snagsSince : null)}
+            </p>
+          </div>
           <div>
             <p className="text-title font-semibold tracking-tight">
               한 블록 = 머지된 작업 하나.

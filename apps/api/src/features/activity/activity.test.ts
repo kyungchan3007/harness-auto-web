@@ -1,4 +1,4 @@
-import { ActivityIn, looksSecret } from "@hav/shared/activity";
+import { ActivityIn, looksSecret, snagOf } from "@hav/shared/activity";
 import { describe, expect, it } from "vitest";
 import type { Env } from "../../env";
 import { app } from "../../index";
@@ -54,5 +54,16 @@ describe("공개 기록 거르기 (서버 쪽)", () => {
 
   it("작업 번호는 숫자 4자리만", () => {
     expect(ActivityIn.safeParse({ ...ok, task: "46" }).success).toBe(false);
+  });
+});
+
+describe("작업별 막힘 (작업 0075)", () => {
+  it("하네스가 막음 · 게이트 실패만 · 작업 번호가 없으면 셀 수 없음", () => {
+    expect(snagOf({ kind: "blocked", ok: false, task: "0069" })).toBe("blocked");
+    expect(snagOf({ kind: "gate", ok: false, task: "0070" })).toBe("failed");
+    expect(snagOf({ kind: "gate", ok: true, task: "0070" })).toBeNull();
+    expect(snagOf({ kind: "gate", ok: null, task: "0070" })).toBeNull();
+    expect(snagOf({ kind: "test", ok: false, task: "0070" })).toBeNull();
+    expect(snagOf({ kind: "blocked", ok: false, task: null })).toBeNull();
   });
 });

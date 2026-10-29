@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BLOCK, PER_LAYER, towerLayout } from "./tower";
+import { BLOCK, PER_LAYER, PULL, pulled, towerLayout } from "./tower";
 
 describe("블록 탑 배치", () => {
   it("블록 수만큼 · 한 층 3개 · 높이는 층 수만큼", () => {
@@ -15,6 +15,12 @@ describe("블록 탑 배치", () => {
     expect(spots.slice(3).every((s) => s.rotationY === Math.PI / 2)).toBe(true);
     const zs = spots.slice(0, 3).map((s) => s.position[2]);
     expect(Math.min(...zs.slice(1).map((z, i) => z - zs[i]))).toBeGreaterThanOrEqual(BLOCK.short);
+  });
+
+  it("빼낸 자리 — 블록의 긴 쪽으로만 · 높이는 그대로", () => {
+    const { spots } = towerLayout(4);
+    expect(pulled(spots[1])).toEqual([PULL, spots[1].position[1], spots[1].position[2]]);
+    expect(pulled(spots[3])).toEqual([spots[3].position[0], spots[3].position[1], PULL]);
   });
 
   it("색 높이 t — 맨 아래 0 · 맨 위 1 · 하나면 1 · 0개 · 음수는 빈 탑", () => {

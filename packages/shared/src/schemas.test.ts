@@ -3,6 +3,7 @@ import { IsoDate } from "./date";
 import { CurrencyCode, FxHistoryQuery, FxLatest } from "./fx";
 import { LevelsQuery } from "./prices";
 import { CurrencySignal } from "./signal";
+import { blockMarks, snagText } from "./tasks";
 
 describe("요청 검사", () => {
   it("통화 코드: 소문자도 받아 대문자로 · 3글자가 아니면 실패", () => {
@@ -59,5 +60,26 @@ describe("응답 검사 (화면이 쓰는 쪽)", () => {
     expect(CurrencySignal.safeParse(ok).success).toBe(true);
     const { method: _, ...noMethod } = ok;
     expect(CurrencySignal.safeParse(noMethod).success).toBe(false);
+  });
+});
+
+describe("블록 탑 막힘 표시 (작업 0075)", () => {
+  const done = [
+    { task: "0070", mergedAt: "2026-10-29T11:00:00.000Z" },
+    { task: "0069", mergedAt: "2026-10-29T10:44:00.000Z" },
+    { task: null, mergedAt: "2026-10-28T09:00:00.000Z" },
+    { task: "0069", mergedAt: "2026-10-29T10:00:00.000Z" },
+  ];
+  const snags = { "0069": { blocked: 2, failed: 0 } };
+
+  it("아래(오래된 머지)부터 · 막힘이 있었던 작업의 PR 은 모두 · 작업 번호 없으면 false", () => {
+    expect(blockMarks(done, snags)).toEqual([false, true, true, false]);
+    expect(blockMarks(done, {})).toEqual([false, false, false, false]);
+  });
+
+  it("설명 글 — 빨간 블록 수 · 센 날짜 (서울 시간)", () => {
+    expect(snagText(blockMarks(done, snags), "2026-10-28T14:55:22.828Z")).toBe("빨간 블록 2개 = 하네스가 막았거나 게이트가 실패했던 작업 · 10월 28일 기록부터 셈");
+    expect(snagText([false], "2026-10-28T15:30:00.000Z")).toBe("빨간 블록 없음 — 하네스가 막거나 게이트가 실패한 작업이 없음 · 10월 29일 기록부터 셈");
+    expect(snagText([], null)).toContain("아직 센 기록 없음");
   });
 });
