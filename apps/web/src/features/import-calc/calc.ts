@@ -1,6 +1,6 @@
 // 직구 예상 세금 — 순수 함수 (테스트 있음) · 브라우저 안에서만 계산하고 어디에도 보내지 않음 (IMP-01)
 // 기준값은 rules.ts 한 곳 (IMP-03) · 결과는 "예상" (IMP-04) · 틀린 입력은 계산하지 않고 이유 (IMP-05)
-import type { PiggyMood } from "@hav/ui/three/piggy";
+import type { MoneyMood } from "@hav/ui/three/money-cat";
 import { DUTY_FREE_USD, type Route, VAT_RATE } from "./rules";
 
 export type Rate = { baseRate: number; unit: number };
@@ -26,7 +26,7 @@ export type CalcResult =
       /** 한도까지 남은 달러 (넘으면 0) */
       leftUsd: number;
       over: boolean;
-      /** 한도 대비 물건 값 (막대 · 돼지 표정) */
+      /** 한도 대비 물건 값 (막대 · 고양이 표정) */
       ratio: number;
       /** 한도 안이면 null (세금 없음) */
       tax: Tax | null;
@@ -77,8 +77,8 @@ export function calc(input: CalcInput, rates: Record<string, Rate>): CalcResult 
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-/** 🐷 표정 — 한도 안 웃음 · 80% 넘으면 걱정 · 넘으면 시무룩 · 입력 전엔 보통 */
-export function piggyMood(r: CalcResult | null): PiggyMood {
+/** 💰 돈 든 고양이 표정 — 한도 안 웃음 · 80% 넘으면 걱정 · 넘으면 시무룩 · 입력 전엔 보통 */
+export function catMood(r: CalcResult | null): MoneyMood {
   if (!r || !r.ok) return "neutral";
   if (r.over) return "sad";
   return r.ratio >= 0.8 ? "worried" : "happy";

@@ -4,11 +4,11 @@
 import { currencyName, groupByRegion, SOURCE_NAME } from "@hav/shared/currency";
 import type { FxRate } from "@hav/shared/fx";
 import { useState, useSyncExternalStore } from "react";
-import { PiggyLazy } from "../../shared/three-lazy";
-import { type CalcInput, calc, piggyMood } from "./calc";
+import { MoneyCatLazy } from "../../shared/three-lazy";
+import { type CalcInput, calc, catMood } from "./calc";
 import { ROUTE_LABEL, RULES_SOURCE, type Route } from "./rules";
 
-const MOOD_TEXT = { happy: "면세 한도 안이라 웃는 돼지", worried: "한도에 가까워 걱정하는 돼지", sad: "한도를 넘어 시무룩한 돼지", neutral: "기다리는 돼지" } as const;
+const MOOD_TEXT = { happy: "면세 한도 안이라 금화를 안고 웃는 고양이", worried: "한도에 가까워 금화를 꽉 쥐고 걱정하는 고양이", sad: "한도를 넘어 세금 동전이 날아가 시무룩한 고양이", neutral: "금화를 들고 기다리는 고양이" } as const;
 
 export function CalcForm({ rates }: { rates: FxRate[] }) {
   const table = Object.fromEntries(rates.map((r) => [r.currency, r]));
@@ -21,7 +21,7 @@ export function CalcForm({ rates }: { rates: FxRate[] }) {
   const set = (k: keyof CalcInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setInput((i) => ({ ...i, [k]: e.target.value }));
   const started = input.price.trim() !== "";
   const r = started ? calc(input, table) : null;
-  const mood = piggyMood(r);
+  const mood = catMood(r);
   const rate = table[input.currency];
   const err = (f: string) => (r && !r.ok && r.field === f ? r.reason : null);
 
@@ -72,7 +72,7 @@ export function CalcForm({ rates }: { rates: FxRate[] }) {
               <span className="ml-1.5 text-title font-semibold">원</span>
             </p>
           </div>
-          <PiggyLazy mood={mood} label={MOOD_TEXT[mood]} className="size-28 shrink-0 sm:size-36" />
+          <MoneyCatLazy mood={mood} label={MOOD_TEXT[mood]} className="size-28 shrink-0 sm:size-36" />
         </div>
 
         {!r && <p className="mt-6 text-base text-fg-2">물건 값을 넣으면 면세 한도 안인지 바로 보여 드립니다</p>}

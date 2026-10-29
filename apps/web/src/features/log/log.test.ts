@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { pickTasks } from "./use-tasks";
 import { MOOD_TEXT, moodOf } from "./mood";
 import { STAGES, deskState } from "./stage";
-import { MOODS } from "@hav/ui/three/suitcase";
+import { MOODS } from "@hav/ui/three/worker-cat";
 import { KEEP_LINES, agoText, clockText, liveStatus, mergeEvents, todayStats } from "./status";
 
 const ev = (id: number, at: string, over: Partial<ActivityEvent> = {}): ActivityEvent => ({ id, at, kind: "edit", label: "코드 수정", file: null, ok: null, task: null, ...over });
@@ -68,7 +68,7 @@ describe("지난 작업 고르기", () => {
   });
 });
 
-describe("🧳 표정 고르기", () => {
+describe("🐱 표정 고르기", () => {
   const at = "2026-10-28T13:59:00Z"; // NOW 1분 전 → 작업 중
   const mood = (over: Partial<ActivityEvent>) => moodOf(liveStatus([ev(1, at, over)], NOW));
 

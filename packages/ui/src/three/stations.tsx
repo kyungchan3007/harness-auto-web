@@ -1,13 +1,13 @@
 "use client";
 
-// 🧳 자리 옮기기 장면 — 책상 N개가 한 줄로 · 캐릭터가 지금 자리 앞으로 걸어감 (자리가 바뀌면 걷는 동작)
+// 🐱 자리 옮기기 장면 — 책상 N개가 한 줄로 · 캐릭터가 지금 자리 앞으로 걸어감 (자리가 바뀌면 걷는 동작)
 // 무슨 단계인지 · 이름은 쓰는 쪽이 정함 (디자인 시스템은 자리 번호만 받음)
 import { RoundedBox } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Color, type Group, type PerspectiveCamera } from "three";
 import { Stage, tokenColor } from "./stage";
-import { type Mood, SuitcaseFigure } from "./suitcase";
+import { type Mood, RagdollFigure } from "./ragdoll";
 
 export type StationsProps = {
   count: number;
@@ -93,7 +93,7 @@ function Walker({ target, mood, animate }: { target: number; mood: Mood; animate
   });
   return (
     <group ref={g} position={[target, -0.1, WALK_Z]} scale={0.55}>
-      <SuitcaseFigure mood={walking ? "walking" : mood} animate={animate} />
+      <RagdollFigure mood={walking ? "walking" : mood} gear="hardhat" animate={animate} />
     </group>
   );
 }

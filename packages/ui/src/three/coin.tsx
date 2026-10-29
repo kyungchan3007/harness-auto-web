@@ -12,7 +12,7 @@ export type CoinProps = { symbol: string; tone: Tone | null; className?: string;
 const FLIP_S = 0.7; // 뒤집는 데 걸리는 초
 
 /** 앞면 그림 — 신호 색 바탕 · 가운데 기호 · 가장자리 고리 (글꼴 파일을 받지 않게 캔버스에 시스템 글꼴로) */
-function faceTexture(symbol: string, face: string, ink: string): CanvasTexture {
+export function faceTexture(symbol: string, face: string, ink: string): CanvasTexture {
   const size = 512;
   const c = document.createElement("canvas");
   c.width = c.height = size;
