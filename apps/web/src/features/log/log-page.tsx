@@ -1,8 +1,7 @@
-// 만드는 중 페이지 — 시작 제목 → 가운데 고정 패널 ①~③ → ④ 작업 책상 → 끝 숫자 (docs/design.md "만드는 중" 페이지)
+// 만드는 중 페이지 — 가운데 고정 패널 ①~③ → ④ 작업 책상 → 끝 숫자 (docs/design.md "만드는 중" 페이지)
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
 import type { TasksSummary } from "@hav/shared/tasks";
-import { Reveal } from "@hav/ui/reveal";
 import { REPO_URL } from "./task-desks";
 import { LogBody } from "./log-body";
 
@@ -11,21 +10,8 @@ export function LogPage({ tasks }: { tasks: Fetched<TasksSummary> }) {
     <>
       <SiteNav page="log" />
 
-      <section data-surface="dark" className="bg-surface px-4 pt-24 pb-12 text-fg sm:px-8 sm:pt-32">
-        <Reveal>
-          <div className="mx-auto max-w-5xl">
-            <p className="text-eyebrow font-semibold text-fg-2">만드는 중</p>
-            <h1 className="mt-4 text-hero font-bold tracking-tighter">
-              이 사이트는
-              <br />
-              <span className="text-aurora">AI 코딩 에이전트</span>가
-              <br />
-              만들고 있습니다.
-            </h1>
-            <p className="mt-8 max-w-2xl text-lead text-fg-2">환율을 받는 일부터 이 페이지까지. 지금 무엇을 하고 있는지, 어디서 막혔는지 그대로 보여 줍니다.</p>
-          </div>
-        </Reveal>
-      </section>
+      {/* 큰 시작 제목은 뺌 (2026-10-29 · 작업 0057) — 바로 장면 ① 부터 · 제목은 화면 읽기용으로만 */}
+      <h1 className="sr-only">만드는 중 — AI 코딩 에이전트가 이 사이트를 만드는 과정</h1>
 
       <LogBody buildTasks={tasks} />
 
