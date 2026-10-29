@@ -36,6 +36,13 @@
       "when": 1793274100960,
       "tag": "0004_fx_currency_date_index",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1793275534060,
+      "tag": "0005_task_snags",
+      "breakpoints": true
     }
   ]
 }

@@ -65,3 +65,11 @@ export type ActivityList = z.infer<typeof ActivityList>;
 
 /** 남겨 두는 개수 — 더 오래된 건 지움 (공개 일지의 원본은 git · PR) */
 export const ACTIVITY_KEEP = 500;
+
+/** 작업별로 쌓아 두는 막힘인가 — 하네스가 막음 · 게이트 실패 · 작업 번호가 없으면 셀 수 없음 (작업 0075) */
+export function snagOf(e: Pick<ActivityIn, "kind" | "ok" | "task">): "blocked" | "failed" | null {
+  if (!e.task) return null;
+  if (e.kind === "blocked") return "blocked";
+  if (e.kind === "gate" && e.ok === false) return "failed";
+  return null;
+}

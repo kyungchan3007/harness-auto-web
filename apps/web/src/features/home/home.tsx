@@ -4,7 +4,7 @@ import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
 import type { FxHistory, FxLatest } from "@hav/shared/fx";
 import type { PriceLevels } from "@hav/shared/prices";
-import type { TasksSummary } from "@hav/shared/tasks";
+import { type TasksSummary, blockMarks, snagText } from "@hav/shared/tasks";
 import type { SignalList } from "@hav/shared/signal";
 import { Card } from "@hav/ui/card";
 import { Section } from "@hav/ui/section";
@@ -51,6 +51,8 @@ export function Home({ latest, signals, levels, heroHistory, tasks }: HomeData) 
   const year = hero && heroHistory.ok ? toUnit(heroHistory.data.rates, hero.unit) : [];
   const yearRange = rangeOf(year);
   const done = tasks.ok ? tasks.data.done : [];
+  const marks = tasks.ok ? blockMarks(done, tasks.data.snags) : [];
+  const snagLine = snagText(marks, tasks.ok ? tasks.data.snagsSince : null);
 
   return (
     <>
@@ -214,7 +216,13 @@ export function Home({ latest, signals, levels, heroHistory, tasks }: HomeData) 
             </Link>
           </Reveal>
           {/* 🧱 블록 탑 미리보기 — 머지된 작업 하나 = 블록 하나 · 맨 위 최신 블록이 떨어져 앉음 */}
-          <BlockTowerLazy count={done.length} label={`블록 탑 — 머지된 작업 ${done.length}개`} className="h-[300px] w-full sm:h-[360px]" />
+          <div>
+            <BlockTowerLazy count={done.length} marks={marks} label={`블록 탑 — 머지된 작업 ${done.length}개 · ${snagLine}`} className="h-[300px] w-full sm:h-[360px]" />
+            <p className="mt-2 flex items-start justify-center gap-2 text-center text-xs text-fg-2">
+              <span aria-hidden className="mt-1 inline-block size-2 shrink-0 rounded-sm bg-expensive" />
+              {snagLine}
+            </p>
+          </div>
         </div>
       </section>
 

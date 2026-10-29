@@ -2,14 +2,15 @@
 
 // 🧱 블록 탑 — 블록 count 개를 젠가처럼 쌓음 · 아래 → 위로 오로라 색 (청록 → 보라 → 핑크) · 맨 위(최신) 블록이 위에서 떨어져 앉음
 // 블록이 무엇인지는 쓰는 쪽이 정함 (만드는 중: 머지된 PR 하나) · 탑이 높아지면 전체를 줄여 화면에 맞춤
+// marks[i] = true 인 블록은 빨강 (신호 "비쌈" 색 · 만드는 중: 막힘이 있었던 작업 · 작업 0075) — 뜻은 쓰는 쪽이 글자로도 알려 줄 것
 import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { Color, type Group } from "three";
 import { Stage, tokenColor } from "./stage";
-import { BLOCK, towerLayout } from "./tower";
+import { BLOCK, pulled, towerLayout } from "./tower";
 
-export type BlockTowerProps = { count: number; className?: string; label?: string };
+export type BlockTowerProps = { count: number; marks?: boolean[]; className?: string; label?: string };
 
 const FIT = 2.6; // 탑이 이 높이보다 크면 줄임
 const DROP = 1.6; // 최신 블록이 떨어지기 시작하는 높이
@@ -20,13 +21,14 @@ function aurora(t: number, stops: Color[]): Color {
   return stops[i].clone().lerp(stops[i + 1], x - i);
 }
 
-function Tower({ count, animate }: { count: number; animate: boolean }) {
+function Tower({ count, marks, animate }: { count: number; marks: boolean[]; animate: boolean }) {
   const { spots, height } = useMemo(() => towerLayout(count), [count]);
   const colors = useMemo(() => {
     const stops = [tokenColor("--hav-aurora-1", "#4ff0e0"), tokenColor("--hav-aurora-2", "#9c8cff"), tokenColor("--hav-aurora-3", "#ff8ad8")].map((c) => new Color(c));
-    // 아래쪽은 어둡게 눌러 최신 쪽이 더 빛나 보이게
-    return spots.map((s) => aurora(s.t, stops).multiplyScalar(0.45 + 0.55 * s.t));
-  }, [spots]);
+    const red = new Color(tokenColor("--hav-expensive", "#ff5a5f"));
+    // 아래쪽은 어둡게 눌러 최신 쪽이 더 빛나 보이게 · 빨간 블록은 높이와 상관없이 선명하게
+    return spots.map((s, i) => (marks[i] ? red.clone() : aurora(s.t, stops).multiplyScalar(0.45 + 0.55 * s.t)));
+  }, [spots, marks]);
   const spin = useRef<Group>(null);
   const top = useRef<Group>(null);
   const born = useRef<number | null>(null);
@@ -53,8 +55,15 @@ function Tower({ count, animate }: { count: number; animate: boolean }) {
         {spots.map((s, i) => {
           const last = i === spots.length - 1;
           const block = (
-            <RoundedBox key={i} args={[BLOCK.long, BLOCK.tall, BLOCK.short]} radius={0.05} smoothness={3} position={s.position} rotation={[0, s.rotationY, 0]}>
-              <meshStandardMaterial color={colors[i]} roughness={0.55} emissive={last ? colors[i] : "#000000"} emissiveIntensity={last ? 0.45 : 0} />
+            <RoundedBox
+              key={i}
+              args={[BLOCK.long, BLOCK.tall, BLOCK.short]}
+              radius={0.05}
+              smoothness={3}
+              position={marks[i] ? pulled(s) : s.position}
+              rotation={[0, s.rotationY, 0]}
+            >
+              <meshStandardMaterial color={colors[i]} roughness={0.55} emissive={last || marks[i] ? colors[i] : "#000000"} emissiveIntensity={last ? 0.45 : marks[i] ? 0.3 : 0} />
             </RoundedBox>
           );
           return last ? (
@@ -70,7 +79,9 @@ function Tower({ count, animate }: { count: number; animate: boolean }) {
   );
 }
 
-export default function BlockTower({ count, className = "", label }: BlockTowerProps) {
+const NONE: boolean[] = [];
+
+export default function BlockTower({ count, marks = NONE, className = "", label }: BlockTowerProps) {
   return (
     <Stage className={className} camera={{ position: [0, 1.4, 6.2], fov: 32 }} label={label}>
       {(animate) => (
@@ -79,7 +90,7 @@ export default function BlockTower({ count, className = "", label }: BlockTowerP
           <directionalLight position={[3, 5, 4]} intensity={1.8} />
           <pointLight position={[-3, 1, 2]} intensity={5} color={tokenColor("--hav-aurora-3", "#ff8ad8")} />
           <group rotation={[0.12, 0, 0]}>
-            <Tower count={count} animate={animate} />
+            <Tower count={count} marks={marks} animate={animate} />
           </group>
         </>
       )}

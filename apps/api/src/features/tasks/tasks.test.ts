@@ -55,6 +55,17 @@ describe("GET /tasks 응답", () => {
   });
 
   it("아직 한 번도 안 받았으면 빈 목록 · syncedAt null", () => {
-    expect(summarize([])).toEqual({ names: {}, done: [], syncedAt: null });
+    expect(summarize([])).toEqual({ names: {}, done: [], syncedAt: null, snags: {}, snagsSince: null });
+  });
+
+  it("막힘 — 0 보다 큰 작업만 · 세기 시작한 때는 가장 이른 since (작업 0075)", () => {
+    const snag = (task: string, blocked: number, failed: number, since: string) => ({ task, blocked, failed, since, updatedAt: since });
+    const s = summarize([], [snag("0058", 0, 3, "2026-10-28T15:00:00.000Z"), snag("0069", 2, 0, "2026-10-28T14:55:22.828Z"), snag("0070", 0, 0, "2026-10-29T00:00:00.000Z")]);
+    expect(s.snags).toEqual({ "0058": { blocked: 0, failed: 3 }, "0069": { blocked: 2, failed: 0 } });
+    expect(s.snagsSince).toBe("2026-10-28T14:55:22.828Z");
+  });
+
+  it("막힘이 없는 예전 응답도 통과 — 웹이 API 보다 먼저 배포돼도 깨지지 않음", () => {
+    expect(TasksSummary.parse({ names: {}, done: [], syncedAt: null })).toMatchObject({ snags: {}, snagsSince: null });
   });
 });

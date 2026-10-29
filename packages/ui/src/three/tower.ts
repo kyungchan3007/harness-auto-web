@@ -13,6 +13,13 @@ export type BlockSpot = {
   t: number;
 };
 
+/** 젠가처럼 긴 쪽으로 빼낸 자리 — 표시한 블록(만드는 중: 막힌 작업)이 위쪽 핑크와 섞여 안 보여서 (작업 0075) */
+export const PULL = 0.28;
+export function pulled(s: BlockSpot, by = PULL): [number, number, number] {
+  const [x, y, z] = s.position;
+  return s.rotationY === 0 ? [x + by, y, z] : [x, y, z + by];
+}
+
 /** count 개를 아래에서 위로 · 탑 전체 높이도 같이 (카메라 맞춤용) */
 export function towerLayout(count: number): { spots: BlockSpot[]; height: number } {
   const n = Math.max(0, Math.floor(count));

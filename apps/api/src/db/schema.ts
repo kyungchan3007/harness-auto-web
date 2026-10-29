@@ -54,6 +54,15 @@ export const activityEvents = sqliteTable("activity_events", {
   task: text("task"), // NNNN
 });
 
+/** 작업별 막힘 수 — 실시간 기록은 최근 500줄만 남아서 따로 쌓음 (작업 0075) · 기록이 들어올 때 +1 */
+export const taskSnags = sqliteTable("task_snags", {
+  task: text("task").primaryKey(), // NNNN
+  blocked: integer("blocked").notNull().default(0), // 하네스가 막음
+  failed: integer("failed").notNull().default(0), // 게이트 실패
+  since: text("since").notNull(), // 이 작업의 막힘을 처음 센 때
+  updatedAt: text("updated_at").notNull(),
+});
+
 /** GitHub 이슈 · 머지된 PR — GitHub Actions(sync-tasks.yml)가 통째로 바꿔 넣음 · 만드는 중 페이지의 지난 작업 · 작업 이름 */
 export const githubItems = sqliteTable("github_items", {
   number: integer("number").primaryKey(), // 이슈 · PR 번호 (GitHub 에서 서로 겹치지 않음)
