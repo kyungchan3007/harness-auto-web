@@ -1,0 +1,1 @@
+CREATE INDEX `fx_rates_currency_date` ON `fx_rates` (`currency`,`date`);
