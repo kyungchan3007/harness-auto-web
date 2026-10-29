@@ -100,7 +100,8 @@ function PinnedScenes({ activity, names, blocked, mood }: Props) {
             </motion.div>
           </AnimatePresence>
         </div>
-        <motion.div style={{ scale, opacity }} className="relative mx-auto w-full max-w-3xl">
+        {/* 고양이가 앉을 자리만큼 위를 비움 — 넓은 화면(xl)은 패널 옆이라 필요 없음 · 전엔 1,100px 안팎에서 설명 글을 가렸음 (작업 0062) */}
+        <motion.div style={{ scale, opacity }} className="relative mx-auto mt-12 w-full max-w-3xl sm:mt-20 xl:mt-0">
           <Buddy mood={mood} />
           <LivePanel activity={activity} names={names} mode={SCENES[scene].mode} />
         </motion.div>
@@ -126,7 +127,7 @@ function StackedScenes({ activity, names, blocked, mood }: Props) {
       {SCENES.map((s, i) => (
         <div key={s.mode} className="mx-auto max-w-3xl space-y-8">
           <Caption i={i} blocked={blocked} />
-          <div className="relative">
+          <div className={`relative ${i === 0 ? "mt-12 sm:mt-20 xl:mt-0" : ""}`}>
             {i === 0 && <Buddy mood={mood} />}
             <LivePanel activity={activity} names={names} mode={s.mode} />
           </div>
