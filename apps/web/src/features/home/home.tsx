@@ -1,10 +1,10 @@
 // 홈 — 빌드 때 받은 데이터로 그림 · docs/design.md "홈 화면 흐름" 순서대로
-//   1 첫 화면(지구본) → 2 여행지 고르기 → 3 통화 전체 → 4 1년 흐름 → 5 직구 계산기 입구 → 6 만드는 중 입구
+//   1 첫 화면(지구본) → 2 여행지 고르기 → 3 통화 전체 → 4 1년 흐름 → 5 직구 계산기 입구
+//   6 만드는 중 입구는 뺌 (2026-10-29 사용자: "이건 없어도 돼 버려" · 작업 0079) — 꼬리말 링크로 /log
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
 import type { FxHistory, FxLatest } from "@hav/shared/fx";
 import type { PriceLevels } from "@hav/shared/prices";
-import { type TasksSummary, blockMarks, snagText } from "@hav/shared/tasks";
 import type { SignalList } from "@hav/shared/signal";
 import { Card } from "@hav/ui/card";
 import { Section } from "@hav/ui/section";
@@ -12,7 +12,7 @@ import { SignalBadge } from "@hav/ui/signal-badge";
 import { Tabs } from "@hav/ui/tabs";
 import { SOURCE_NAME, currencyName, groupByRegion, headline, percentileText, rangeOf, rateText, toUnit } from "@hav/shared/currency";
 import { CurrencyFlag as Flag } from "@/shared/currency-flag";
-import { BlockTowerLazy, GlobeLazy, MoneyCatLazy } from "@/shared/three-lazy";
+import { GlobeLazy, MoneyCatLazy } from "@/shared/three-lazy";
 import { YearChart } from "@/shared/year-chart";
 import Link from "next/link";
 import { TripScenes } from "./trip-scenes";
@@ -27,10 +27,9 @@ export type HomeData = {
   signals: Fetched<SignalList>;
   levels: Fetched<PriceLevels>;
   heroHistory: Fetched<FxHistory>;
-  tasks: Fetched<TasksSummary>;
 };
 
-export function Home({ latest, signals, levels, heroHistory, tasks }: HomeData) {
+export function Home({ latest, signals, levels, heroHistory }: HomeData) {
   const rates = latest.ok ? latest.data.rates : [];
   const bySignal = new Map(signals.ok ? signals.data.signals.map((s) => [s.currency, s]) : []);
   const windowDays = signals.ok ? signals.data.rule.windowDays : 90;
@@ -50,9 +49,6 @@ export function Home({ latest, signals, levels, heroHistory, tasks }: HomeData) 
   });
   const year = hero && heroHistory.ok ? toUnit(heroHistory.data.rates, hero.unit) : [];
   const yearRange = rangeOf(year);
-  const done = tasks.ok ? tasks.data.done : [];
-  const marks = tasks.ok ? blockMarks(done, tasks.data.snags) : [];
-  const snagLine = snagText(marks, tasks.ok ? tasks.data.snagsSince : null);
 
   return (
     <>
@@ -189,40 +185,6 @@ export function Home({ latest, signals, levels, heroHistory, tasks }: HomeData) 
             </Link>
           </Reveal>
           <MoneyCatLazy mood="happy" className="h-[260px] w-full sm:h-[320px]" />
-        </div>
-      </section>
-
-      {/* 6 만드는 중 입구 */}
-      <section id="making" data-surface="dark" className="bg-surface px-4 py-24 text-fg sm:px-8 sm:py-32">
-        <div className="mx-auto grid max-w-5xl items-center gap-8 md:grid-cols-[1.2fr_1fr]">
-          <Reveal>
-            <p className="text-eyebrow font-semibold text-fg-2">만드는 중</p>
-            <h2 className="mt-3 text-title font-semibold tracking-tight">
-              이 사이트는
-              <br />
-              <span className="text-aurora">AI 에이전트</span>가 만들고 있습니다.
-            </h2>
-            <p className="mt-6 text-lead text-fg-2">
-              {done.length > 0 ? (
-                <>
-                  지금까지 머지된 작업 <span className="font-semibold text-fg">{done.length}개</span> · 마지막은 &ldquo;{done[0].name}&rdquo;
-                </>
-              ) : (
-                <>작업 기록을 받지 못했습니다{tasks.ok ? "" : ` (${tasks.reason})`}</>
-              )}
-            </p>
-            <Link href="/log" className="mt-8 inline-flex text-sm font-semibold text-accent hover:underline">
-              만드는 과정 보기 →
-            </Link>
-          </Reveal>
-          {/* 🧱 블록 탑 미리보기 — 머지된 작업 하나 = 블록 하나 · 맨 위 최신 블록이 떨어져 앉음 */}
-          <div>
-            <BlockTowerLazy count={done.length} marks={marks} label={`블록 탑 — 머지된 작업 ${done.length}개 · ${snagLine}`} className="h-[300px] w-full sm:h-[360px]" />
-            <p className="mt-2 flex items-start justify-center gap-2 text-center text-xs text-fg-2">
-              <span aria-hidden className="mt-1 inline-block size-2 shrink-0 rounded-sm bg-expensive" />
-              {snagLine}
-            </p>
-          </div>
         </div>
       </section>
 
