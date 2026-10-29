@@ -63,6 +63,11 @@ test("밖 쓰기: 프로젝트 안 · /dev 는 허용, 밖은 차단", () => {
   assert.ok(isOutside("/tmp/log", root));
   assert.ok(isOutside("../other/x", root));
   assert.ok(isOutside("~/x", root));
+  // 이 프로젝트의 기억 폴더만 예외 · 다른 프로젝트 기억 · 그 위 폴더는 계속 막음
+  assert.ok(!isOutside("~/.claude/projects/-work-app/memory/a.md", root));
+  assert.ok(isOutside("~/.claude/projects/-work-other/memory/a.md", root));
+  assert.ok(isOutside("~/.claude/projects/-work-app/settings.json", root));
+  assert.ok(isOutside("~/.claude/projects/-work-app/memory/../x.md", root));
   assert.ok(decide({ tool_name: "Bash", tool_input: { command: "cd /work/app && bash g.sh > /tmp/g.log" } }, root));
   assert.equal(decide({ tool_name: "Bash", tool_input: { command: "cd /work/app && bash g.sh > .tmp/g.log 2>/dev/null" } }, root), null);
   assert.ok(decide({ tool_name: "Write", tool_input: { file_path: "/Users/me/notes.md" } }, root));
