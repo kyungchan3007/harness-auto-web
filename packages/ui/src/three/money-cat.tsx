@@ -16,6 +16,8 @@ export default function MoneyCat({ mood, className = "", label }: MoneyCatProps)
         <>
           <ambientLight intensity={1} />
           <directionalLight position={[2, 3, 4]} intensity={1.5} />
+          {/* 금화가 반짝이게 따뜻한 빛 하나 더 */}
+          <pointLight position={[0.6, 0.2, 1.6]} intensity={1.4} color="#fff1c2" />
           <RagdollFigure mood={mood} gear="coin" animate={animate} />
         </>
       )}
