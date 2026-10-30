@@ -1,14 +1,14 @@
 // 하네스 스크립트 테스트 — node --test .agents/scripts/
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { globToRegExp, isTestFile, matchesAny, planSection } from "./lib.mjs";
+import { currentSpec, globToRegExp, isTestFile, matchesAny, planSection } from "./lib.mjs";
 import { protectedHits } from "./protected-check.mjs";
 import { outOfPlan, removedAssertions } from "./scope-check.mjs";
 import { emptyTemplate } from "./spec-check.mjs";
 import { decide, isOutside, writeTargets } from "./outside-guard.mjs";
 import { englishReason, lastTurnTexts } from "./korean-gate.mjs";
 import { classifyBash, resultOf, safeFile, stripText, taskFor, toActivity } from "./activity.mjs";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join as pathJoin } from "node:path";
 
@@ -204,4 +204,17 @@ test("실시간 기록: 하네스가 막을 쓰기는 실행 전에 🛑 · 그 
   assert.equal(pre("Write", { file_path: "/etc/x" })?.kind, "blocked");
   assert.equal(pre("Write", { file_path: "/repo/a.ts" }), null);
   assert.equal(toActivity({ hook_event_name: "PostToolUse", tool_name: "mcp__ccd_turn__update_plan", tool_input: {} }, "/repo"), null);
+});
+
+test("작업 폴더 찾기: CI(떨어진 HEAD)는 GITHUB_HEAD_REF 로 (작업 0102)", () => {
+  const dir = mkdtempSync(pathJoin(tmpdir(), "spec-"));
+  try {
+    mkdirSync(pathJoin(dir, ".agents/specs/0102-ci-branch-spec"), { recursive: true });
+    const s = currentSpec(dir, { GITHUB_HEAD_REF: "task/0102-ci-branch-spec" });
+    assert.equal(s.id, "0102");
+    assert.equal(s.dir, pathJoin(".agents/specs", "0102-ci-branch-spec"));
+    assert.equal(currentSpec(dir, { GITHUB_HEAD_REF: "" }).id, null); // 저장소가 아니면 브랜치 없음
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
