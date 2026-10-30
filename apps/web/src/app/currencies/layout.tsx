@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 // 목록 · 동전은 여기 (통화를 바꿔도 그대로) · 빌드 때 API 에서
 export default async function Layout({ children }: LayoutProps<"/currencies">) {
-  const [latest, signals] = await Promise.all([api.latest(), api.signals()]);
+  const [latest, signals, changes] = await Promise.all([api.latest(), api.signals(), api.changes(30)]);
   return (
-    <BrowseLayout latest={latest} signals={signals}>
+    <BrowseLayout latest={latest} signals={signals} changes={changes}>
       {children}
     </BrowseLayout>
   );
