@@ -57,8 +57,17 @@ export function readList(path) {
 }
 
 /** 브랜치 이름의 4자리 번호 → .agents/specs/NNNN-이름 폴더 */
-export function currentSpec(cwd = ROOT) {
-  const branch = git(["rev-parse", "--abbrev-ref", "HEAD"], cwd);
+/**
+ * 지금 작업 브랜치 이름 — CI(pull_request)는 PR 을 main 에 합친 떨어진 HEAD 라 "HEAD" 가 나옴
+ * → GitHub 가 주는 PR 브랜치 이름(GITHUB_HEAD_REF)을 먼저 씀 (작업 0102)
+ *   전에는 CI 에서 작업 번호를 못 찾아 Full 판정 · 작업 기록 · 범위 검사가 모두 건너뛰어졌음
+ */
+export function branchName(cwd = ROOT, env = process.env) {
+  return env.GITHUB_HEAD_REF || git(["rev-parse", "--abbrev-ref", "HEAD"], cwd);
+}
+
+export function currentSpec(cwd = ROOT, env = process.env) {
+  const branch = branchName(cwd, env);
   const id = /(?:^|[/-])(\d{4})(?:[/-]|$)/.exec(branch)?.[1];
   if (!id) return { branch, id: null, dir: null };
   const specs = join(cwd, ".agents/specs");
