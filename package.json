@@ -16,7 +16,8 @@
     "test": "turbo run test",
     "check": "bash .agents/checks.sh",
     "spec:new": "node .agents/scripts/new-spec.mjs",
-    "test:harness": "node --test .agents/scripts/harness.test.mjs"
+    "test:harness": "node --test .agents/scripts/harness.test.mjs",
+    "test:e2e": "npm -w @hav/web run test:e2e"
   },
   "devDependencies": {
     "turbo": "2.11.10"
