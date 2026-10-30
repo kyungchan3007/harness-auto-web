@@ -17,6 +17,7 @@ import { YearChart } from "@/shared/year-chart";
 import Link from "next/link";
 import { TripScenes } from "./trip-scenes";
 import { DESTINATIONS, EARTH_TEXTURE, SEOUL } from "./places";
+import { FreshnessNote } from "@/shared/freshness-note";
 import { CountUp } from "@hav/ui/count-up";
 import { Reveal } from "@hav/ui/reveal";
 
@@ -63,6 +64,7 @@ export function Home({ latest, signals, levels, heroHistory }: HomeData) {
               <Flag currency={HERO} />
               오늘의 환율 · {hero.date} 기준 · {SOURCE_NAME[hero.source]}
             </p>
+            <FreshnessNote date={hero.date} className="mt-2" />
             <h1 className="mt-4 text-title font-semibold tracking-tight text-fg">{headline(HERO, heroSignal?.signal ?? null)}</h1>
             <p className="mt-6 text-hero font-bold tracking-tighter">
               <CountUp text={rateText(hero).value} className="text-aurora" />

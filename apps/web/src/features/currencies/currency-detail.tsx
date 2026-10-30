@@ -6,6 +6,7 @@ import type { CurrencySignal } from "@hav/shared/signal";
 import { TRAVEL_COUNTRIES, countriesOf } from "@hav/shared/travel";
 import { SignalBadge } from "@hav/ui/signal-badge";
 import { CurrencyFlag } from "@/shared/currency-flag";
+import { FreshnessNote } from "@/shared/freshness-note";
 import { Converter } from "./converter";
 import { describeCurrency } from "./describe";
 import { PeriodChart } from "./period-chart";
@@ -37,6 +38,7 @@ export function CurrencyDetail({ code, rate, signal, history, problem }: DetailD
           <ShareButton title={`${name} ${code} 환율 · Tripfx`} text={describeCurrency(code, rate, s?.signal ?? null)} />
         </span>
       </p>
+      <FreshnessNote date={rate.date} className="mt-1" />
       <h1 className="mt-3 text-[clamp(2.5rem,7vw,4.5rem)] leading-none font-bold tracking-tighter">
         <span className="text-aurora">{t.value}</span>
         <span className="ml-2 text-title font-semibold text-fg">{t.unit}</span>

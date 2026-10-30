@@ -19,6 +19,7 @@
 | FX-05 | 공식 원화 환율(수출입은행)이 예비(Frankfurter)보다 우선 — 예비는 이미 있는 값을 덮지 않는다 | `store.ts` saveRates (onConflictDoNothing) |
 | FX-06 | 환율 계산기(원 ↔ 외화)는 브라우저 안에서만 계산 · 매매기준율과 기준일 · 출처를 같이 · 송금 환율(tts · ttb)이 없으면 그 값은 보여 주지 않음 (지어내지 않음) | `apps/web/src/features/currencies/convert.test.ts` (작업 0086) |
 | FX-07 | 평일 12:00 KST 수집을 놓쳐도 13:30 · 15:00 KST 에 "오늘 값이 없으면" 다시 수집 · 새 값을 저장하면 사이트를 바로 다시 빌드 | `apps/api/src/features/fx/daily.test.ts` (작업 0094) |
+| FX-08 | 화면의 기준일이 오늘(한국 날짜)이 아니면 왜인지 한 줄 — 고시 전 · 늦음 · 주말 (값은 바꾸지 않음) | `apps/web/src/shared/freshness.test.ts` (작업 0095) |
 
 - 검사 칸이 비어 있는 규칙 = 아직 문서로만 있는 규칙. 위반이 한 번 나오면 테스트로 옮긴다
 
