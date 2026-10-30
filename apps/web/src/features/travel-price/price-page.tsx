@@ -1,14 +1,16 @@
-// 여행 물가 페이지 — 밝은 섹션 · 물가 · 환율 신호는 빌드 때 받은 값만 · 없으면 이유 (docs/domain/travel-price.md)
+// 여행 물가 페이지 — 밝은 섹션 · 묶음 · 여행 예산 어림(작업 0088) · 물가 · 환율 신호는 빌드 때 받은 값만 · 없으면 이유 (docs/domain/travel-price.md)
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
 import type { PriceLevels } from "@hav/shared/prices";
 import type { SignalList } from "@hav/shared/signal";
 import { TRAVEL_COUNTRIES, travelBands } from "@hav/shared/travel";
+import { BudgetPlanner } from "./budget-planner";
 import { PriceBands } from "./price-bands";
 
 export function PricePage({ levels, signals }: { levels: Fetched<PriceLevels>; signals: Fetched<SignalList> }) {
   const data = levels.ok ? travelBands(levels.data) : null;
   const signalOf = Object.fromEntries((signals.ok ? signals.data.signals : []).map((s) => [s.currency, s.signal]));
+  const latestOf = Object.fromEntries((signals.ok ? signals.data.signals : []).map((s) => [s.currency, s.latest]));
   const source = levels.ok ? levels.data.rows[0]?.source : null;
 
   return (
@@ -37,6 +39,12 @@ export function PricePage({ levels, signals }: { levels: Fetched<PriceLevels>; s
               </div>
             )}
           </div>
+
+          {data && data.bands.length > 0 && (
+            <div className="mt-12">
+              <BudgetPlanner rows={data.bands.flatMap((b) => b.rows)} latestOf={latestOf} />
+            </div>
+          )}
 
           {data && (
             <div className="mt-12 space-y-2 border-t border-line pt-6 text-xs leading-relaxed text-fg-2">
