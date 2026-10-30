@@ -91,6 +91,11 @@ export function TripScenes({ origin, stops }: { origin: Place; stops: TripStop[]
                   <Link href={`/currencies/${code}`} className="hover:underline">
                     {currencyName(code)} 1년 흐름 →
                   </Link>
+                  {s.price && (
+                    <Link href={`/prices?country=${s.place.country}#budget`} className="hover:underline">
+                      {country?.name ?? "이 나라"} 여행 예산 어림 →
+                    </Link>
+                  )}
                   <Link href="/prices" className="hover:underline">
                     다른 나라 물가 →
                   </Link>

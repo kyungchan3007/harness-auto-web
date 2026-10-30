@@ -67,6 +67,11 @@ export function CurrencyDetail({ code, rate, signal, history, problem }: DetailD
         <a href={`/calc?currency=${code}`} className="hover:underline">
           이 통화로 직구 계산하기 →
         </a>
+        {countriesOf(code).length === 1 && (
+          <a href={`/prices?country=${countriesOf(code)[0]}#budget`} className="hover:underline">
+            {TRAVEL_COUNTRIES[countriesOf(code)[0]]?.name} 여행 예산 어림 →
+          </a>
+        )}
         {countriesOf(code).length > 0 && (
           <a href="/prices" className="hover:underline">
             {countriesOf(code).length === 1 ? `${TRAVEL_COUNTRIES[countriesOf(code)[0]]?.name} 물가 보기` : "이 통화 쓰는 나라 물가 보기"} →
