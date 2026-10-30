@@ -7,12 +7,13 @@ export type ApiBinding = { fetch(request: Request): Promise<Response> };
 
 /** [경로, 캐시 초] — 위에서부터 먼저 맞는 것 */
 const ROUTES: [RegExp, number][] = [
-  [/^\/activity$/, 3], // 만드는 중 페이지가 몇 초마다
+  [/^\/activity$/, 3], // 작업실 페이지가 몇 초마다
   [/^\/fx\/latest$/, 300],
   [/^\/fx\/[A-Za-z]{3}\/history$/, 300],
   [/^\/signal(\/[A-Za-z]{3})?$/, 300],
   [/^\/prices\/levels$/, 300],
   [/^\/tasks$/, 60], // 지난 작업 · 작업 이름 (GitHub Actions 가 저장)
+  [/^\/status$/, 60], // 사이트 상태 점검판 — API 가 5분 구간 캐시 (작업 0105)
 ];
 
 export const BFF_PREFIX = "/bff";

@@ -13,10 +13,14 @@ export const cacheKey = (version: string, day: string, url: string) => {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-/** GET 응답 캐시 — 200 만 저장 · 응답 머리에 x-cache: hit | miss */
-export function cached(): MiddlewareHandler<{ Bindings: Env }> {
+/** 지금이 속한 구간 — 하루(기본) 또는 bucketMs 단위 (예: 5분) */
+const bucketOf = (bucketMs?: number) => (bucketMs ? new Date(Math.floor(Date.now() / bucketMs) * bucketMs).toISOString().slice(0, 16) : today());
+
+/** GET 응답 캐시 — 200 만 저장 · 응답 머리에 x-cache: hit | miss
+ *  bucketMs: 하루보다 자주 바뀌는 응답(사이트 상태 · 작업 0105)은 그 구간마다 새로 — 보는 사람이 많아도 구간마다 D1 을 한 번만 */
+export function cached(opts: { bucketMs?: number } = {}): MiddlewareHandler<{ Bindings: Env }> {
   return async (c, next) => {
-    const key = cacheKey(c.env.CF_VERSION_METADATA?.id ?? "dev", today(), c.req.url);
+    const key = cacheKey(c.env.CF_VERSION_METADATA?.id ?? "dev", bucketOf(opts.bucketMs), c.req.url);
     const hit = await safe(() => c.env.DB.prepare("select body from api_cache where key = ?").bind(key).first<{ body: string }>());
     if (hit) return c.body(hit.body, 200, { "content-type": "application/json; charset=UTF-8", "x-cache": "hit" });
     await next();

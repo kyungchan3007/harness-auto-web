@@ -16,7 +16,7 @@ export function SiteNav({ page }: { page: Page }) {
         { href: "/currencies", label: "통화", current: page === "currencies" },
         { href: "/prices", label: "여행 물가", current: page === "prices" },
         { href: "/calc", label: "직구 계산", current: page === "calc" },
-        { href: "/log", label: "만드는 중", current: page === "log" },
+        { href: "/log", label: "작업실", current: page === "log" }, // 예전 "만드는 중" (2026-10-30 사용자 · 작업 0105)
       ]}
       action={
         <Link href="/currencies" className="inline-flex rounded-pill bg-accent px-4 py-1.5 text-xs font-semibold text-on-accent">
