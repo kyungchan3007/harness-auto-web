@@ -49,6 +49,12 @@ export async function hasRates(d1: D1Database, date: string): Promise<boolean> {
   return (await d1.prepare("select 1 as x from fx_rates where date = ? limit 1").bind(date).first()) !== null;
 }
 
+/** 마지막 환율 수집 시작 시각 — 오늘 값 메우기가 20분에 한 번까지만 돌게 (작업 0106) */
+export async function lastFxRunAt(d1: D1Database): Promise<string | null> {
+  const r = await d1.prepare("select started_at as at from fetch_runs where source like 'koreaexim%' order by id desc limit 1").first<{ at: string }>();
+  return r?.at ?? null;
+}
+
 /** 가장 최근 기준일의 모든 통화 */
 export async function latestRates(d1: D1Database) {
   const db = drizzle(d1);

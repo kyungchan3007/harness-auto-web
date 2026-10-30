@@ -7,8 +7,9 @@ import type { Env } from "../../env";
 import { validate } from "../../validate";
 import { changesOf } from "./changes";
 import { collectDay } from "./collect";
+import { ensureToday } from "./ensure";
 import { kstDate } from "./rate";
-import { d1RateStore, latestRates, rateHistory, ratesSince } from "./store";
+import { d1RateStore, hasRates, lastFxRunAt, latestRates, rateHistory, ratesSince } from "./store";
 
 export const fxRoutes = new Hono<{ Bindings: Env }>()
   .get("/latest", cached(), async (c) => {
@@ -28,6 +29,19 @@ export const fxRoutes = new Hono<{ Bindings: Env }>()
     const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
     const body: FxHistory = { currency, since, rates: await rateHistory(c.env.DB, currency, since) };
     return c.json(body);
+  })
+  // 오늘 환율이 없으면 수집 — 예약(cron)이 안 돌아도 GitHub Actions 가 불러 메움 (작업 0106) · 토큰 없이 · 20분에 한 번까지
+  .post("/ensure-today", async (c) => {
+    const db = c.env.DB;
+    const r = await ensureToday({
+      store: d1RateStore(db),
+      hasRates: (date) => hasRates(db, date),
+      lastRunAt: () => lastFxRunAt(db),
+      koreaeximKey: c.env.KOREAEXIM_KEY,
+      deployHook: c.env.PAGES_DEPLOY_HOOK,
+    });
+    // 결과에는 출처 메시지를 넣지 않음 (공개 경로)
+    return c.json(r.done && !r.skipped ? { done: true, status: r.status, rows: r.rows, rebuild: r.rebuild } : r, 200, { "cache-control": "no-store" });
   })
   // 과거 날짜 채우기 · 수동 재수집 — ADMIN_TOKEN 이 없으면 경로 자체가 없는 것처럼 (404)
   .post("/collect", validate("query", CollectQuery), async (c) => {
