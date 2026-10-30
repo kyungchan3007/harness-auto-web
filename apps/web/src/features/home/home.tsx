@@ -3,7 +3,7 @@
 //   6 만드는 중 입구는 뺌 (2026-10-29 사용자: "이건 없어도 돼 버려" · 작업 0079) — 꼬리말 링크로 /log
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
-import type { FxHistory, FxLatest } from "@hav/shared/fx";
+import type { FxChanges, FxHistory, FxLatest } from "@hav/shared/fx";
 import type { PriceLevels } from "@hav/shared/prices";
 import type { SignalList } from "@hav/shared/signal";
 import { Card } from "@hav/ui/card";
@@ -16,22 +16,27 @@ import { GlobeLazy, MoneyCatLazy } from "@/shared/three-lazy";
 import { YearChart } from "@/shared/year-chart";
 import Link from "next/link";
 import { TripScenes } from "./trip-scenes";
+import { monthChangeText } from "./change";
 import { DESTINATIONS, EARTH_TEXTURE, SEOUL } from "./places";
 import { FreshnessNote } from "@/shared/freshness-note";
 import { CountUp } from "@hav/ui/count-up";
 import { Reveal } from "@hav/ui/reveal";
 
 const HERO = "USD";
+const CHANGE_TONE = { up: "text-expensive", down: "text-cheap", flat: "text-fg" } as const;
 
 export type HomeData = {
   latest: Fetched<FxLatest>;
   signals: Fetched<SignalList>;
   levels: Fetched<PriceLevels>;
   heroHistory: Fetched<FxHistory>;
+  /** 통화마다 지난 1개월 변화 — 못 받으면 칸에서 뺌 (작업 0096) */
+  changes: Fetched<FxChanges>;
 };
 
-export function Home({ latest, signals, levels, heroHistory }: HomeData) {
+export function Home({ latest, signals, levels, heroHistory, changes }: HomeData) {
   const rates = latest.ok ? latest.data.rates : [];
+  const changeOf = new Map(changes.ok ? changes.data.changes.map((c) => [c.currency, c]) : []);
   const bySignal = new Map(signals.ok ? signals.data.signals.map((s) => [s.currency, s]) : []);
   const windowDays = signals.ok ? signals.data.rule.windowDays : 90;
   const hero = rates.find((r) => r.currency === HERO);
@@ -112,9 +117,12 @@ export function Home({ latest, signals, levels, heroHistory }: HomeData) {
                   {g.items.map((r) => {
                     const s = bySignal.get(r.currency);
                     const t = rateText(r);
+                    const ch = changeOf.get(r.currency);
+                    const m = ch ? monthChangeText(ch.pct) : null;
                     return (
+                      // 칸 전체가 통화 상세로 (작업 0096)
+                      <Link key={r.currency} href={`/currencies/${r.currency}`} className="block rounded-card transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-accent">
                       <Card
-                        key={r.currency}
                         title={
                           <span className="flex items-center gap-2">
                             <Flag currency={r.currency} />
@@ -131,7 +139,14 @@ export function Home({ latest, signals, levels, heroHistory }: HomeData) {
                           {s?.signal && <SignalBadge signal={s.signal} />}
                           <span className="text-xs text-fg-2">{percentileText(s?.signal ?? null, s?.percentile ?? null, windowDays)}</span>
                         </div>
+                        {m && (
+                          <p className="mt-3 text-xs text-fg-2" title={`${ch?.from.date} → ${ch?.to.date}`}>
+                            지난 1개월 <span className={`font-semibold ${CHANGE_TONE[m.tone]}`}>{m.text}</span>
+                            <span className="sr-only"> ({m.label})</span>
+                          </p>
+                        )}
                       </Card>
+                      </Link>
                     );
                   })}
                 </div>
