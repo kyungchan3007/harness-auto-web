@@ -16,6 +16,10 @@ const PLAN = `# 계획
   - 원본 5400×2700
 - 잘림 고침
 
+## 애매한 곳
+- 사진 밝기 (가정)
+- 없음
+
 ## 허점
 <!-- 이번 작업에서 드러난 실수 -->
 - 같은 재질에 사진만 넣으면 \`회색\`
@@ -37,6 +41,7 @@ describe("작업 일지 (LOG-02 · 작업 0090)", () => {
     expect(e.slug).toBe("real-globe");
     expect(e.what).toBe("지구본을 실제 지구로 — NASA · 원본 5400×2700");
     expect(e.gaps).toEqual(["같은 재질에 사진만 넣으면 회색"]);
+    expect(e.assumptions).toEqual(["사진 밝기 (가정)"]);
   });
   it("요청 원문이 없거나 폴더 이름이 틀리면 뺌", () => {
     expect(entryOf("0085-real-globe", { plan: PLAN })).toBeNull();
@@ -52,7 +57,7 @@ describe("작업 일지 (LOG-02 · 작업 0090)", () => {
     expect(redact("https://tripfx.pages.dev/currencies/USD · 커밋 e4dd061")).toBe("https://tripfx.pages.dev/currencies/USD · 커밋 e4dd061");
   });
   it("최근 작업부터", () => {
-    const a = { task: "0009", slug: "a", request: "x", what: null, gaps: [] };
+    const a = { task: "0009", slug: "a", request: "x", what: null, gaps: [], assumptions: [] };
     const b = { ...a, task: "0090" };
     expect([a, b].sort(newestFirst).map((e) => e.task)).toEqual(["0090", "0009"]);
   });
