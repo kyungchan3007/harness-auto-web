@@ -38,6 +38,11 @@ export function d1RateStore(d1: D1Database): RateStore {
   };
 }
 
+/** 그 날짜 환율이 하나라도 있는지 — 기본 키(날짜, 통화) 앞부분이라 한 줄만 읽음 (작업 0094) */
+export async function hasRates(d1: D1Database, date: string): Promise<boolean> {
+  return (await d1.prepare("select 1 as x from fx_rates where date = ? limit 1").bind(date).first()) !== null;
+}
+
 /** 가장 최근 기준일의 모든 통화 */
 export async function latestRates(d1: D1Database) {
   const db = drizzle(d1);
