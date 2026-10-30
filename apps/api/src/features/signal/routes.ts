@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { CurrencyParam } from "@hav/shared/fx";
 import type { CurrencySignal, SignalList } from "@hav/shared/signal";
 import { Hono } from "hono";
+import { cached } from "../../db/cache";
 import { fxRates } from "../../db/schema";
 import type { Env } from "../../env";
 import { validate } from "../../validate";
@@ -15,7 +16,7 @@ const since = () => new Date(Date.now() - (SIGNAL_RULE.windowDays + 30) * 86400_
 const perUnit = (r: { baseRate: number; unit: number }) => r.baseRate / r.unit;
 
 export const signalRoutes = new Hono<{ Bindings: Env }>()
-  .get("/", async (c) => {
+  .get("/", cached(), async (c) => {
     const db = drizzle(c.env.DB);
     const rows = await db.select().from(fxRates).where(gte(fxRates.date, since())).orderBy(fxRates.currency, fxRates.date);
     const byCurrency = new Map<string, { date: string; value: number }[]>();
@@ -27,7 +28,7 @@ export const signalRoutes = new Hono<{ Bindings: Env }>()
     const body: SignalList = { rule: SIGNAL_RULE, signals };
     return c.json(body);
   })
-  .get("/:currency", validate("param", CurrencyParam), async (c) => {
+  .get("/:currency", validate("param", CurrencyParam), cached(), async (c) => {
     const { currency } = c.req.valid("param");
     const db = drizzle(c.env.DB);
     const rows = await db

@@ -43,6 +43,13 @@
       "when": 1793275534060,
       "tag": "0005_task_snags",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793327867649,
+      "tag": "0006_api_cache",
+      "breakpoints": true
     }
   ]
 }

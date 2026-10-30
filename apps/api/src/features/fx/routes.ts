@@ -2,6 +2,7 @@
 import { type CollectResult, CollectQuery, CurrencyParam, type FxHistory, FxHistoryQuery, type FxLatest } from "@hav/shared/fx";
 import { Hono } from "hono";
 import { adminGuard } from "../../admin";
+import { cached } from "../../db/cache";
 import type { Env } from "../../env";
 import { validate } from "../../validate";
 import { collectDay } from "./collect";
@@ -9,11 +10,11 @@ import { kstDate } from "./rate";
 import { d1RateStore, latestRates, rateHistory } from "./store";
 
 export const fxRoutes = new Hono<{ Bindings: Env }>()
-  .get("/latest", async (c) => {
+  .get("/latest", cached(), async (c) => {
     const body: FxLatest = await latestRates(c.env.DB);
     return c.json(body);
   })
-  .get("/:currency/history", validate("param", CurrencyParam), validate("query", FxHistoryQuery), async (c) => {
+  .get("/:currency/history", validate("param", CurrencyParam), validate("query", FxHistoryQuery), cached(), async (c) => {
     const { currency } = c.req.valid("param");
     const { days } = c.req.valid("query");
     const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
