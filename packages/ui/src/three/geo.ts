@@ -65,3 +65,15 @@ export function faceRotationY(place: Pick<Place, "lat" | "lng">): number {
   const [x, , z] = toVec3(place.lat, place.lng);
   return -Math.atan2(x, z);
 }
+
+/** 카메라 기본 거리 · 지구 + 테두리 빛 + 호가 들어가야 할 반지름 */
+export const GLOBE_CAMERA_Z = 4.2;
+export const GLOBE_FIT_RADIUS = 1.3;
+
+/** 세로로 긴 칸에서도 지구가 양옆으로 잘리지 않게 카메라를 물림 — fov 는 세로 기준이라 칸이 좁으면 가로 시야가 줄어듦 (작업 0085)
+ *  넓은 칸은 지금 거리(GLOBE_CAMERA_Z) 그대로 · 좁아질 때만 멀리 */
+export function fitDistance(fovDeg: number, aspect: number, radius = GLOBE_FIT_RADIUS, min = GLOBE_CAMERA_Z) {
+  const v = (fovDeg * Math.PI) / 360;
+  const h = Math.atan(Math.tan(v) * aspect);
+  return Math.max(min, radius / Math.sin(Math.min(v, h)));
+}

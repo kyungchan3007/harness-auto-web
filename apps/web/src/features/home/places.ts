@@ -10,3 +10,7 @@ export const DESTINATIONS: (Place & { country: string })[] = [
   { id: "paris", name: "파리", lat: 48.86, lng: 2.35, currency: "EUR", country: "FRA" },
   { id: "bangkok", name: "방콕", lat: 13.75, lng: 100.5, currency: "THB", country: "THA" },
 ];
+
+/** 지구본 표면 — NASA Visible Earth "Blue Marble" (2004-12 · 지형 + 해저 · 퍼블릭 도메인) 을 2048×1024 로 줄임 (작업 0085)
+ *  원본: https://visibleearth.nasa.gov/images/73909 */
+export const EARTH_TEXTURE = "/textures/earth-2048.jpg";

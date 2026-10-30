@@ -16,7 +16,7 @@ import { GlobeLazy, MoneyCatLazy } from "@/shared/three-lazy";
 import { YearChart } from "@/shared/year-chart";
 import Link from "next/link";
 import { TripScenes } from "./trip-scenes";
-import { DESTINATIONS, SEOUL } from "./places";
+import { DESTINATIONS, EARTH_TEXTURE, SEOUL } from "./places";
 import { CountUp } from "@hav/ui/count-up";
 import { Reveal } from "@hav/ui/reveal";
 
@@ -80,6 +80,7 @@ export function Home({ latest, signals, levels, heroHistory }: HomeData) {
           <GlobeLazy
             className="h-[320px] w-full sm:h-[420px] lg:h-[520px]"
             origin={SEOUL}
+            texture={EARTH_TEXTURE}
             arcs={DESTINATIONS.map((d) => ({ to: d, tone: bySignal.get(d.currency ?? "")?.signal ?? null }))}
           />
         </div>
