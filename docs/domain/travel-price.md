@@ -13,6 +13,7 @@
 | TRV-01 | 물가 지표마다 출처 · 기준 연도를 표시한다 (환율보다 갱신이 느림) | API `GET /prices/levels` 가 `year` · `source` 를 줄마다 돌려줌 |
 | TRV-02 | 출처가 없는 나라는 목록에 넣지 않는다 — 추정치로 채우지 않는다 · 지역 · 소득 묶음(집계)도 뺀다 | `prices.test.ts` "두 값이 다 있는 나라 · 연도만" · "집계는 뺀다" |
 | TRV-03 | 환율 기준일과 물가 기준 연도가 다르면 둘 다 보여 준다 · 한국과 **같은 연도**끼리만 비교 | `store.ts` relativeLevels |
+| TRV-04 | 여행 예산 어림은 물가 수준을 곱하기만 함 — 어림값 · 나라 평균이라는 안내를 같이 · 오늘 환율이 없으면 현지 통화 값은 보여 주지 않음 · 입력은 브라우저 안에서만 | `apps/web/src/features/travel-price/budget.test.ts` (작업 0088) |
 
 ## 출처 (2026-10-28 직접 호출로 확인)
 - 처음 제안한 `PA.NUS.PPPC.RF`(GDP 물가 수준 비율)는 **WDI Database Archives 로 옮겨져 API 에서 안 나옴**
