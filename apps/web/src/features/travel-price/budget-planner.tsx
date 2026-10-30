@@ -6,14 +6,18 @@ import { currencyName } from "@hav/shared/currency";
 import type { SignalList } from "@hav/shared/signal";
 import { type TravelRow, relativeText } from "@hav/shared/travel";
 import { Input, Select } from "@hav/ui/field";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { budgetOf, localText, parseDaily, parseDays, wonText } from "./budget";
 
 type Latest = SignalList["signals"][number]["latest"];
 
 export function BudgetPlanner({ rows, latestOf }: { rows: TravelRow[]; latestOf: Record<string, Latest> }) {
   const sorted = [...rows].sort((a, b) => a.name.localeCompare(b.name, "ko"));
-  const [country, setCountry] = useState(rows.some((r) => r.country === "JPN") ? "JPN" : (sorted[0]?.country ?? ""));
+  // /prices?country=THA#budget (홈 여행지 · 통화 상세에서 옴) — 정적 페이지라 주소는 브라우저에서 읽음 (작업 0100)
+  const fromUrl = useSyncExternalStore(noop, () => new URLSearchParams(window.location.search).get("country")?.toUpperCase() ?? "", () => "");
+  const [picked, setCountry] = useState<string | null>(null);
+  const fallback = rows.some((r) => r.country === "JPN") ? "JPN" : (sorted[0]?.country ?? "");
+  const country = picked ?? (rows.some((r) => r.country === fromUrl) ? fromUrl : fallback);
   const [daily, setDaily] = useState("100,000");
   const [days, setDays] = useState("4");
   const row = rows.find((r) => r.country === country);
@@ -23,7 +27,7 @@ export function BudgetPlanner({ rows, latestOf }: { rows: TravelRow[]; latestOf:
   const b = row && d != null && n != null ? budgetOf(d, n, row.relative, latest?.value ?? null) : null;
 
   return (
-    <section aria-labelledby="budget-title" className="rounded-card bg-surface-2 p-5 sm:p-8">
+    <section id="budget" aria-labelledby="budget-title" className="scroll-mt-20 rounded-card bg-surface-2 p-5 sm:p-8">
       <h2 id="budget-title" className="text-lg font-semibold tracking-tight">
         여행 예산 어림
       </h2>
@@ -87,3 +91,5 @@ export function BudgetPlanner({ rows, latestOf }: { rows: TravelRow[]; latestOf:
     </section>
   );
 }
+
+const noop = () => () => {};
