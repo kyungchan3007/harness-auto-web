@@ -52,6 +52,14 @@ jobs:
           node-version: 22
       - if: steps.changed.outputs.go == 'true'
         run: npm ci
+      - name: 예약 직전이면 기다림 (16분 안에 예약이 있으면 그 시각 + 2분까지 · 작업 0097)
+        if: steps.changed.outputs.go == 'true'
+        run: |
+          s=$(node apps/api/scripts/cron-window.mjs)
+          if [ "$s" -gt 0 ]; then
+            echo "예약(cron)이 곧 돌아 ${s}초 기다린 뒤 배포 — 직전 배포는 그 회차를 놓치게 함" >> "$GITHUB_STEP_SUMMARY"
+            sleep "$s"
+          fi
       - name: D1 마이그레이션 (원격)
         if: steps.changed.outputs.go == 'true'
         working-directory: apps/api
