@@ -11,7 +11,7 @@ export function Characters() {
   const [money, setMoney] = useState<MoneyMood>("happy");
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      <Panel title="작업 고양이 (만드는 중)" moods={MOODS} current={work} onPick={setWork}>
+      <Panel title="작업 고양이 (작업실)" moods={MOODS} current={work} onPick={setWork}>
         <WorkerCatLazy mood={work} label={`작업 고양이 · ${work}`} className="mx-auto size-72" />
       </Panel>
       <Panel title="돈 든 고양이 (직구 계산기)" moods={MONEY_MOODS} current={money} onPick={setMoney}>

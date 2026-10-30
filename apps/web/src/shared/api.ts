@@ -2,6 +2,7 @@
 import { FxChanges, FxHistory, FxLatest } from "@hav/shared/fx";
 import { PriceLevels } from "@hav/shared/prices";
 import { CurrencySignal, SignalList } from "@hav/shared/signal";
+import { SiteStatus } from "@hav/shared/status";
 import { TasksSummary } from "@hav/shared/tasks";
 import type { z } from "zod";
 
@@ -62,4 +63,5 @@ export const api = {
   signal: (currency: string, o?: ApiOptions) => getJson(`/signal/${encodeURIComponent(currency)}`, CurrencySignal, o),
   priceLevels: (o?: ApiOptions) => getJson("/prices/levels?base=KOR", PriceLevels, o),
   tasks: (o?: ApiOptions) => getJson("/tasks", TasksSummary, o),
+  status: (o?: ApiOptions) => getJson("/status", SiteStatus, o),
 };

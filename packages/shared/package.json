@@ -12,7 +12,8 @@
     "./activity": "./src/activity.ts",
     "./tasks": "./src/tasks.ts",
     "./currency": "./src/currency.ts",
-    "./travel": "./src/travel.ts"
+    "./travel": "./src/travel.ts",
+    "./status": "./src/status.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

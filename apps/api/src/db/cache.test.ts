@@ -81,4 +81,23 @@ describe("읽기 응답 캐시 (작업 0083)", () => {
     expect(r.status).toBe(200);
     expect(await r.json()).toEqual({ n: 1 });
   });
+
+  it("구간 캐시 — 같은 5분 안이면 저장한 응답 · 다음 구간이면 새로 (작업 0105)", async () => {
+    const { d1 } = fakeD1();
+    let calls = 0;
+    const app = new Hono<{ Bindings: Env }>().get("/s", cached({ bucketMs: 5 * 60_000 }), (c) => c.json({ n: ++calls }));
+    const env = { DB: d1 } as Env;
+    const realNow = Date.now;
+    try {
+      Date.now = () => Date.parse("2026-10-30T05:01:00Z");
+      await app.request("/s", {}, env);
+      Date.now = () => Date.parse("2026-10-30T05:04:59Z");
+      expect((await app.request("/s", {}, env)).headers.get("x-cache")).toBe("hit");
+      Date.now = () => Date.parse("2026-10-30T05:05:00Z");
+      expect((await app.request("/s", {}, env)).headers.get("x-cache")).toBe("miss");
+      expect(calls).toBe(2);
+    } finally {
+      Date.now = realNow;
+    }
+  });
 });

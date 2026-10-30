@@ -10,6 +10,7 @@ import { collectPriceLevels } from "./features/prices/collect";
 import { priceRoutes } from "./features/prices/routes";
 import { d1PriceStore } from "./features/prices/store";
 import { signalRoutes } from "./features/signal/routes";
+import { statusRoutes } from "./features/status/routes";
 import { taskRoutes } from "./features/tasks/routes";
 
 export const app = new Hono<{ Bindings: Env }>()
@@ -24,7 +25,13 @@ export const app = new Hono<{ Bindings: Env }>()
   .route("/signal", signalRoutes)
   .route("/prices", priceRoutes)
   .route("/activity", activityRoutes)
-  .route("/tasks", taskRoutes);
+  .route("/tasks", taskRoutes)
+  // 사이트 상태 — 오늘 환율 예약 회차 (작업 0105) · 회차는 아래 CRON 에서
+  .route("/status", statusRoutes([
+    { cron: "0 3 * * 1-5", kind: "collect" },
+    { cron: "30 4 * * 1-5", kind: "retry" },
+    { cron: "0 6 * * 1-5", kind: "retry" },
+  ]));
 
 /** apps/web 은 hc<AppType>() 로 부른다 (Hono RPC) */
 export type AppType = typeof app;
