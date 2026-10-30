@@ -52,6 +52,12 @@ export async function latestRates(d1: D1Database) {
   return { date: last.date, rates };
 }
 
+/** 모든 통화의 기준일 이후 값 — 기본 키(날짜, 통화) 앞부분으로 그 기간만 읽음 (작업 0096) */
+export async function ratesSince(d1: D1Database, since: string) {
+  const db = drizzle(d1);
+  return db.select({ currency: fxRates.currency, date: fxRates.date, baseRate: fxRates.baseRate, unit: fxRates.unit }).from(fxRates).where(gte(fxRates.date, since));
+}
+
 /** 한 통화의 기준일 이후 값 (오래된 것부터) */
 export async function rateHistory(d1: D1Database, currency: string, since: string) {
   const db = drizzle(d1);
