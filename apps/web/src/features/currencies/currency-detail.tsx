@@ -7,7 +7,9 @@ import { TRAVEL_COUNTRIES, countriesOf } from "@hav/shared/travel";
 import { SignalBadge } from "@hav/ui/signal-badge";
 import { CurrencyFlag } from "@/shared/currency-flag";
 import { Converter } from "./converter";
+import { describeCurrency } from "./describe";
 import { PeriodChart } from "./period-chart";
+import { ShareButton } from "./share-button";
 
 export type DetailData = { code: string; rate: FxRate | null; signal: Fetched<CurrencySignal>; history: Fetched<FxHistory>; problem: string | null };
 
@@ -31,6 +33,9 @@ export function CurrencyDetail({ code, rate, signal, history, problem }: DetailD
       <p className="flex flex-wrap items-center gap-2 text-sm text-fg-2">
         <CurrencyFlag currency={code} />
         <span className="font-semibold text-fg">{name}</span> {code} · {rate.date} 기준 · {SOURCE_NAME[rate.source]}
+        <span className="ml-auto">
+          <ShareButton title={`${name} ${code} 환율 · Tripfx`} text={describeCurrency(code, rate, s?.signal ?? null)} />
+        </span>
       </p>
       <h1 className="mt-3 text-[clamp(2.5rem,7vw,4.5rem)] leading-none font-bold tracking-tighter">
         <span className="text-aurora">{t.value}</span>
