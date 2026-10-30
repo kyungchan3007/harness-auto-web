@@ -2,15 +2,17 @@
 // 목록 · 동전은 레이아웃이라 통화를 바꿔도 남고, 상세(children)만 바뀜
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
-import type { FxLatest } from "@hav/shared/fx";
+import type { FxChanges, FxLatest } from "@hav/shared/fx";
 import type { SignalList } from "@hav/shared/signal";
 import type { ReactNode } from "react";
 import { CoinSlot } from "./coin-slot";
 import { CurrencyList } from "./currency-list";
 
-export function BrowseLayout({ latest, signals, children }: { latest: Fetched<FxLatest>; signals: Fetched<SignalList>; children: ReactNode }) {
+export function BrowseLayout({ latest, signals, changes, children }: { latest: Fetched<FxLatest>; signals: Fetched<SignalList>; changes: Fetched<FxChanges>; children: ReactNode }) {
   const tones = Object.fromEntries((signals.ok ? signals.data.signals : []).map((s) => [s.currency, s.signal]));
-  const items = (latest.ok ? latest.data.rates : []).map((r) => ({ currency: r.currency, signal: tones[r.currency] ?? null }));
+  // 지난 1개월 변화 — 못 받으면 정렬 단추 · 숫자를 뺌 (작업 0099)
+  const pct = Object.fromEntries((changes.ok ? changes.data.changes : []).map((c) => [c.currency, c.pct]));
+  const items = (latest.ok ? latest.data.rates : []).map((r) => ({ currency: r.currency, signal: tones[r.currency] ?? null, change: pct[r.currency] ?? null }));
   const windowDays = signals.ok ? signals.data.rule.windowDays : 90;
 
   return (

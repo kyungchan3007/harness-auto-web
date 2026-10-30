@@ -12,8 +12,9 @@ import { useState } from "react";
 import { CurrencyFlag } from "../../shared/currency-flag";
 import { favoritesFirst, useFavorites } from "./favorites";
 import { codeFromPath } from "./route";
+import { SORTS, type SortId, pctText, sortByChange } from "./sort";
 
-export type ListItem = { currency: string; signal: Signal | null };
+export type ListItem = { currency: string; signal: Signal | null; change: number | null };
 
 const TONE: Record<Signal, string> = { cheap: "text-cheap", normal: "text-normal", expensive: "text-expensive" };
 
@@ -22,11 +23,15 @@ export function CurrencyList({ items }: { items: ListItem[] }) {
   const [query, setQuery] = useState("");
   const [region, setRegion] = useState<Region | "all" | "fav">("all");
   const [favs, toggleFav] = useFavorites();
+  const [sort, setSort] = useState<SortId>("region");
+  const hasChange = items.some((i) => i.change != null);
   const regions = REGIONS.filter((r) => items.some((i) => currencyRegion(i.currency) === r.id));
   const chips = [{ id: "all" as const, label: "전체" }, ...(favs.length > 0 ? [{ id: "fav" as const, label: `★ 즐겨찾기 ${favs.length}` }] : []), ...regions];
   // 즐겨찾기를 다 빼서 그 묶음이 사라지면 전체로
   const picked = region === "fav" && favs.length === 0 ? "all" : region;
-  const shown = favoritesFirst(groupByRegion(items).flatMap((g) => g.items), favs).filter(
+  // 정렬을 고르면 그 순서 그대로 (즐겨찾기 맨 위는 기본 정렬일 때만)
+  const base = groupByRegion(items).flatMap((g) => g.items);
+  const shown = (sort === "region" ? favoritesFirst(base, favs) : sortByChange(base, sort)).filter(
     (i) => (picked === "all" || (picked === "fav" ? favs.includes(i.currency) : currencyRegion(i.currency) === picked)) && matchCurrency(i.currency, query),
   );
 
@@ -46,6 +51,21 @@ export function CurrencyList({ items }: { items: ListItem[] }) {
           </button>
         ))}
       </div>
+      {hasChange && (
+        <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1 text-xs lg:flex-wrap" role="group" aria-label="정렬">
+          {SORTS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setSort(s.id)}
+              aria-pressed={sort === s.id}
+              className={`shrink-0 rounded-pill border px-3 py-1 transition-colors ${sort === s.id ? "border-fg text-fg" : "border-line text-fg-2 hover:text-fg"}`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
       {/* 스크롤 영역 안쪽 여백 — 칸 테두리가 영역 끝에 붙어 잘려 보였음 (작업 0067) */}
       <ul className="mt-3 flex gap-2 overflow-x-auto p-0.5 pb-2 lg:max-h-[calc(100svh-14rem)] lg:flex-col lg:overflow-x-visible lg:overflow-y-auto">
         {shown.map((i) => {
@@ -57,15 +77,22 @@ export function CurrencyList({ items }: { items: ListItem[] }) {
                 href={`/currencies/${i.currency}`}
                 aria-current={on ? "page" : undefined}
                 scroll={false}
-                className={`flex flex-1 items-center gap-2 rounded-field border px-3 py-2.5 text-sm transition-colors ${on ? "border-accent bg-surface-2 text-fg" : "border-line text-fg-2 hover:border-fg-2 hover:text-fg"}`}
+                className={`flex min-w-0 flex-1 items-center gap-2 rounded-field border px-3 py-2.5 text-sm transition-colors ${on ? "border-accent bg-surface-2 text-fg" : "border-line text-fg-2 hover:border-fg-2 hover:text-fg"}`}
               >
                 <span aria-hidden className="text-accent">
                   +
                 </span>
                 <CurrencyFlag currency={i.currency} className="h-3.5 w-5" />
-                <span className="font-semibold">{currencyName(i.currency)}</span>
-                <span className="text-xs">{i.currency}</span>
-                {i.signal && <span className={`ml-auto pl-3 text-xs font-semibold ${TONE[i.signal]}`}>{signalLabel(i.signal)}</span>}
+                <span className="min-w-0 truncate font-semibold">{currencyName(i.currency)}</span>
+                <span className="shrink-0 text-xs">{i.currency}</span>
+                <span className="ml-auto flex shrink-0 items-baseline gap-2 pl-3 text-xs whitespace-nowrap">
+                  {sort !== "region" && i.change != null && (
+                    <span className={`font-semibold ${Math.abs(i.change) < 0.05 ? "text-fg" : i.change < 0 ? "text-cheap" : "text-expensive"}`} title="지난 1개월 변화 (원화 기준)">
+                      {pctText(i.change)}
+                    </span>
+                  )}
+                  {i.signal && <span className={`font-semibold ${TONE[i.signal]}`}>{signalLabel(i.signal)}</span>}
+                </span>
               </Link>
               <button
                 type="button"
