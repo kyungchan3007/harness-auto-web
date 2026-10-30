@@ -53,13 +53,6 @@ test("즐겨찾기 — 맨 위로 · 새로 고침 뒤에도 (작업 0089)", asy
   await expect(list.locator("li").first()).toContainText("바트");
 });
 
-test("작업 일지 — 요청 원문이 보임 (작업 0090)", async ({ page }) => {
-  await page.goto("/log");
-  const first = page.locator("#journal details").first();
-  await expect(first).toContainText("요청 원문");
-  await expect(page.locator("#journal a", { hasText: ".agents/specs" })).toHaveAttribute("href", /^https:\/\/github\.com\//);
-});
-
 test("통화 목록 정렬 — 싸진 순이면 변화율이 보임 (작업 0099)", async ({ page }) => {
   await page.goto("/currencies/USD");
   await page.getByRole("group", { name: "정렬" }).getByRole("button", { name: "1개월 많이 싸진 순" }).click();

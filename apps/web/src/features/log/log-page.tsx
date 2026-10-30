@@ -1,13 +1,11 @@
-// 만드는 중 페이지 — 가운데 고정 패널 ①~③ → ④ 작업 책상 → 끝 숫자 → 작업 일지(작업 0090) (docs/design.md "만드는 중" 페이지)
+// 만드는 중 페이지 — 가운데 고정 패널 ①~③ → ④ 작업 책상 → 끝 숫자 (docs/design.md "만드는 중" 페이지)
 import type { Fetched } from "@/shared/api";
 import { SiteNav } from "@/shared/site-nav";
 import type { TasksSummary } from "@hav/shared/tasks";
-import type { JournalEntry } from "./journal";
-import { JournalList } from "./journal-list";
 import { REPO_URL } from "@/shared/site";
 import { LogBody } from "./log-body";
 
-export function LogPage({ tasks, journal }: { tasks: Fetched<TasksSummary>; journal: JournalEntry[] }) {
+export function LogPage({ tasks }: { tasks: Fetched<TasksSummary> }) {
   return (
     <>
       <SiteNav page="log" />
@@ -16,8 +14,6 @@ export function LogPage({ tasks, journal }: { tasks: Fetched<TasksSummary>; jour
       <h1 className="sr-only">만드는 중 — AI 코딩 에이전트가 이 사이트를 만드는 과정</h1>
 
       <LogBody buildTasks={tasks} />
-
-      <JournalList entries={journal} names={tasks.ok ? tasks.data.names : {}} done={tasks.ok ? tasks.data.done : []} />
 
       <footer data-surface="dark" className="border-t border-line bg-surface px-4 py-10 text-xs text-fg-2 sm:px-8">
         <div className="mx-auto max-w-5xl">
