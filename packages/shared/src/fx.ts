@@ -49,3 +49,11 @@ export const CollectResult = z.object({
   message: z.string().nullable(),
 });
 export type CollectResult = z.infer<typeof CollectResult>;
+
+/** GET /fx/changes?days=30 — 통화마다 기간 처음 → 마지막 변화 (작업 0096) · 기록이 두 날 미만인 통화는 빠짐 (지어내지 않음 FX-02) */
+export const FxChangesQuery = z.object({ days: z.coerce.number().int().min(7).max(400).default(30) });
+const DayValue = z.object({ date: IsoDate, value: z.number().positive() }); // value = 1 외화당 원 (단위가 달라도 같은 기준 FX-04)
+export const FxChange = z.object({ currency: z.string().length(3), from: DayValue, to: DayValue, pct: z.number() });
+export type FxChange = z.infer<typeof FxChange>;
+export const FxChanges = z.object({ days: z.number().int(), since: IsoDate, changes: z.array(FxChange) });
+export type FxChanges = z.infer<typeof FxChanges>;
