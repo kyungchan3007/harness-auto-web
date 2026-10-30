@@ -42,7 +42,7 @@ export function TripScenes({ origin, stops }: { origin: Place; stops: TripStop[]
   return (
     <div className="relative grid gap-0 lg:grid-cols-[1fr_1fr] lg:gap-10">
       {/* 휴대폰: 위에 고정 · 넓은 화면: 왼쪽에 고정 */}
-      <div className="sticky top-13 z-0 h-[38svh] lg:h-[calc(100svh-3.25rem)]">
+      <div className="sticky top-20 z-0 sm:top-13 h-[38svh] lg:h-[calc(100svh-3.25rem)]">
         <GlobeLazy
           className="h-full w-full"
           origin={origin}
