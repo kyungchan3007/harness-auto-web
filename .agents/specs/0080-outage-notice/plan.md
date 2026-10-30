@@ -23,8 +23,8 @@
 
 ## 완료 기준
 - [x] ALLOW_PROTECTED=1 bash .agents/checks.sh PASS
-- [ ] 운영에 안내 줄 (직접 배포)
-- [ ] 2026-10-30 예약 실행이 API · 사이트를 되살림 → 이 워크플로 지우기 · OUTAGE = null
+- [x] 운영에 안내 줄 (직접 배포)
+- [x] 2026-10-30 예약 실행이 API · 사이트를 되살림 → 이 워크플로 지우기 · OUTAGE = null (작업 0082 · 예약이 늦어 손으로 실행)
 
 ## 허점
 - (작업 0081) "use client" 파일에서 내보낸 함수(outageActive)를 서버 layout 에서 불러 빌드가 깨진 채 머지함 — 게이트(Quick)는 빌드를 안 돌려 못 잡음 → layout · 서버 경계를 바꾸면 머지 전에 `npx turbo run build --filter=@hav/web` 를 돌릴 것
