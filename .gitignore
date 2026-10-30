@@ -23,3 +23,7 @@ dist/
 
 # wrangler 로컬 비밀값
 .dev.vars
+
+# e2e 결과 (작업 0101)
+test-results/
+playwright-report/
