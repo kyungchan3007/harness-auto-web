@@ -21,6 +21,7 @@
 | FX-07 | 평일 12:00 KST 수집을 놓쳐도 13:30 · 15:00 KST 에 "오늘 값이 없으면" 다시 수집 · 새 값을 저장하면 사이트를 바로 다시 빌드 | `apps/api/src/features/fx/daily.test.ts` (작업 0094) |
 | FX-08 | 화면의 기준일이 오늘(한국 날짜)이 아니면 왜인지 한 줄 — 고시 전 · 늦음 · 주말 (값은 바꾸지 않음) | `apps/web/src/shared/freshness.test.ts` (작업 0095) |
 | FX-09 | 예비(Frankfurter)는 공식 출처가 최근 30일에 준 통화만 채운다 — 예비로 넘어간 날 통화 목록이 22개 → 160개로 늘지 않게 (공식 기록이 없으면 거르지 않음) | `collect.test.ts` "공식 출처가 주던 통화만" (작업 0098) |
+| FX-10 | Worker 예약이 안 돌아도 오늘 환율을 메움 — `POST /fx/ensure-today` (평일 · 한국 11:30 뒤 · 오늘 값이 없을 때만 · 20분에 한 번까지 · 결과에 출처 메시지 없음) · GitHub Actions 가 30분마다 부름 | `apps/api/src/features/fx/ensure.test.ts` (작업 0106) |
 
 - 검사 칸이 비어 있는 규칙 = 아직 문서로만 있는 규칙. 위반이 한 번 나오면 테스트로 옮긴다
 

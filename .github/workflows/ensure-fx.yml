@@ -1,0 +1,18 @@
+name: ensure-fx
+# 오늘 환율이 없으면 수집 — Worker 예약(cron)이 돌지 않은 날의 예비 (작업 0106)
+#   2026-10-30 12:00 · 13:30 · 15:00 Worker 예약이 모두 돌지 않음 (원인 확인 중 — Cloudflare 대시보드 Cron 이벤트)
+#   API 가 스스로 거름: 평일 · 한국 11:30 뒤 · 오늘 값이 있으면 아무것도 안 함 · 20분에 한 번까지 → 여기서는 부르기만 (토큰 없음)
+#   GitHub 예약은 늦게 돌 수 있어 30분마다 여러 번 (한국 12:10 ~ 17:40)
+on:
+  schedule:
+    - cron: "10,40 3-8 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  ensure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 오늘 환율 메우기
+        run: |
+          r=$(curl -fsS -X POST https://tripfx-api.developfff.workers.dev/fx/ensure-today)
+          echo "$r" | tee -a "$GITHUB_STEP_SUMMARY"
