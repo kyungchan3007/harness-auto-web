@@ -2,10 +2,10 @@
 import { Hono } from "hono";
 import type { Env } from "./env";
 import { activityRoutes } from "./features/activity/routes";
-import { collectDay } from "./features/fx/collect";
+import { dailyFx } from "./features/fx/daily";
 import { kstDate } from "./features/fx/rate";
 import { fxRoutes } from "./features/fx/routes";
-import { d1RateStore } from "./features/fx/store";
+import { d1RateStore, hasRates } from "./features/fx/store";
 import { collectPriceLevels } from "./features/prices/collect";
 import { priceRoutes } from "./features/prices/routes";
 import { d1PriceStore } from "./features/prices/store";
@@ -30,7 +30,8 @@ export const app = new Hono<{ Bindings: Env }>()
 export type AppType = typeof app;
 
 /** wrangler.jsonc triggers.crons 와 같은 문자열 (index.test.ts 가 검사) */
-export const CRON = { fxDaily: "0 3 * * 1-5", pricesMonthly: "0 4 1 * *" } as const;
+// fxRetry: 13:30 · 15:00 KST — 첫 예약을 놓친 날만 다시 (오늘 값이 있으면 그냥 끝 · 작업 0094)
+export const CRON = { fxDaily: "0 3 * * 1-5", fxRetry1: "30 4 * * 1-5", fxRetry2: "0 6 * * 1-5", pricesMonthly: "0 4 1 * *" } as const;
 
 export default {
   fetch: app.fetch,
@@ -40,7 +41,15 @@ export default {
       ctx.waitUntil(collectPriceLevels(d1PriceStore(env.DB)).then(() => undefined));
       return;
     }
-    // 평일 12:00 KST — 오늘(한국 날짜) 환율 · 결과는 fetch_runs 에
-    ctx.waitUntil(collectDay(d1RateStore(env.DB), kstDate(), { koreaeximKey: env.KOREAEXIM_KEY }).then(() => undefined));
+    // 평일 12:00 KST — 오늘(한국 날짜) 환율 · 결과는 fetch_runs 에 · 새 값이면 사이트 다시 빌드 · 다시 하는 예약은 놓친 날만
+    const retry = controller.cron !== CRON.fxDaily;
+    ctx.waitUntil(
+      dailyFx(kstDate(), retry, {
+        store: d1RateStore(env.DB),
+        hasRates: (date) => hasRates(env.DB, date),
+        koreaeximKey: env.KOREAEXIM_KEY,
+        deployHook: env.PAGES_DEPLOY_HOOK,
+      }).then(() => undefined),
+    );
   },
 } satisfies ExportedHandler<Env>;

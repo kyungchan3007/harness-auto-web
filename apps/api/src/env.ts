@@ -9,4 +9,6 @@ export type Env = {
   ACTIVITY_TOKEN?: string;
   /** 배포 버전 — 읽기 캐시 키에 넣어 새 코드를 배포하면 예전 응답을 안 씀 (wrangler.jsonc version_metadata · 작업 0083) · 테스트에는 없음 */
   CF_VERSION_METADATA?: WorkerVersionMetadata;
+  /** Cloudflare Pages 배포 훅 주소 — 새 환율을 저장하면 사이트를 바로 다시 빌드 (비밀값 · deploy-api 가 GitHub Secrets 에서 넣음 · 작업 0094) · 없으면 안 함 */
+  PAGES_DEPLOY_HOOK?: string;
 };

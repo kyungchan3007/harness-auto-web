@@ -1,6 +1,7 @@
 name: deploy-api
 # main 의 게이트(checks)가 통과하면 API(Worker) 를 배포한다 — D1 마이그레이션 먼저
 # 비밀값(CLOUDFLARE_API_TOKEN · CLOUDFLARE_ACCOUNT_ID)이 없으면 배포는 건너뛴다 (실패 아님)
+# API 와 상관없는 머지(화면 · 문서)는 배포하지 않음 — 배포마다 예약(cron)이 다시 걸리는데, 2026-10-30 12:00 KST 직전(02:56 UTC) 배포 뒤 예약 수집이 돌지 않았음 (작업 0094)
 on:
   workflow_run:
     workflows: [checks]
@@ -19,6 +20,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PAGES_DEPLOY_HOOK: ${{ secrets.PAGES_DEPLOY_HOOK }}
     steps:
       - name: 비밀값 확인
         id: secrets
@@ -33,23 +35,44 @@ jobs:
         if: steps.secrets.outputs.ok == 'true'
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      - uses: actions/setup-node@v4
+          fetch-depth: 2
+      - name: API 가 바뀌었는지 (손으로 실행하면 항상 배포)
+        id: changed
         if: steps.secrets.outputs.ok == 'true'
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || ! git diff --quiet HEAD~1 HEAD -- apps/api packages/shared package-lock.json; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "API · 공용 패키지 변경 없음 — 배포 건너뜀" >> "$GITHUB_STEP_SUMMARY"
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.go == 'true'
         with:
           node-version: 22
-      - if: steps.secrets.outputs.ok == 'true'
+      - if: steps.changed.outputs.go == 'true'
         run: npm ci
       - name: D1 마이그레이션 (원격)
-        if: steps.secrets.outputs.ok == 'true'
+        if: steps.changed.outputs.go == 'true'
         working-directory: apps/api
         run: npx wrangler d1 migrations apply hav-db --remote
         env:
           CI: "1"
       - name: Worker 배포
-        if: steps.secrets.outputs.ok == 'true'
+        if: steps.changed.outputs.go == 'true'
         working-directory: apps/api
         run: npx wrangler deploy
+      - name: 사이트 다시 빌드 훅을 Worker 에 (없을 때만 · 값은 로그에 안 나옴)
+        if: steps.changed.outputs.go == 'true' && env.PAGES_DEPLOY_HOOK != ''
+        working-directory: apps/api
+        run: |
+          if npx wrangler secret list | grep -q '"PAGES_DEPLOY_HOOK"'; then
+            echo "PAGES_DEPLOY_HOOK 이미 있음" >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s' "$PAGES_DEPLOY_HOOK" | npx wrangler secret put PAGES_DEPLOY_HOOK
+            echo "PAGES_DEPLOY_HOOK 넣음 — 새 환율을 저장하면 Worker 가 사이트를 다시 빌드" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: 배포 확인
-        if: steps.secrets.outputs.ok == 'true'
+        if: steps.changed.outputs.go == 'true'
         run: |
           curl -fsS --retry 5 --retry-delay 3 https://tripfx-api.developfff.workers.dev/health | tee -a "$GITHUB_STEP_SUMMARY"
