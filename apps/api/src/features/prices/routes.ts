@@ -2,13 +2,14 @@
 import { LevelsQuery, type PriceCollectResult, type PriceLevels } from "@hav/shared/prices";
 import { Hono } from "hono";
 import { adminGuard } from "../../admin";
+import { cached } from "../../db/cache";
 import type { Env } from "../../env";
 import { validate } from "../../validate";
 import { collectPriceLevels } from "./collect";
 import { d1PriceStore, relativeLevels } from "./store";
 
 export const priceRoutes = new Hono<{ Bindings: Env }>()
-  .get("/levels", validate("query", LevelsQuery), async (c) => {
+  .get("/levels", validate("query", LevelsQuery), cached(), async (c) => {
     const body: PriceLevels = await relativeLevels(c.env.DB, c.req.valid("query").base);
     return c.json(body);
   })

@@ -1,6 +1,7 @@
 // D1 저장 · 읽기 — 물가 수준
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
+import { clearApiCache } from "../../db/cache";
 import { runLog } from "../../db/runs";
 import { priceLevels } from "../../db/schema";
 import type { PriceStore } from "./collect";
@@ -23,6 +24,7 @@ export function d1PriceStore(d1: D1Database): PriceStore {
             set: { level: sql`excluded.level`, source: sql`excluded.source`, fetchedAt: sql`excluded.fetched_at` },
           });
       }
+      if (rows.length > 0) await clearApiCache(d1); // 새 물가 → 저장해 둔 응답은 낡음
       return rows.length;
     },
   };

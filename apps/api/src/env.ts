@@ -7,4 +7,6 @@ export type Env = {
   ADMIN_TOKEN?: string;
   /** 실시간 작업 기록(POST /activity) 토큰 — 에이전트 훅만 씀 · 없으면 그 경로는 꺼짐 */
   ACTIVITY_TOKEN?: string;
+  /** 배포 버전 — 읽기 캐시 키에 넣어 새 코드를 배포하면 예전 응답을 안 씀 (wrangler.jsonc version_metadata · 작업 0083) · 테스트에는 없음 */
+  CF_VERSION_METADATA?: WorkerVersionMetadata;
 };

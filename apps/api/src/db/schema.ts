@@ -63,6 +63,13 @@ export const taskSnags = sqliteTable("task_snags", {
   updatedAt: text("updated_at").notNull(),
 });
 
+/** 읽기 응답 캐시 — 빌드가 같은 날 같은 응답을 여러 번 받아도 D1 은 한 줄만 읽게 (작업 0083 · src/db/cache.ts) · 환율 · 물가를 저장하면 비움 */
+export const apiCache = sqliteTable("api_cache", {
+  key: text("key").primaryKey(), // 배포 버전 | UTC 날짜 | 경로?쿼리
+  body: text("body").notNull(), // 응답 JSON 그대로
+  savedAt: text("saved_at").notNull(),
+});
+
 /** GitHub 이슈 · 머지된 PR — GitHub Actions(sync-tasks.yml)가 통째로 바꿔 넣음 · 만드는 중 페이지의 지난 작업 · 작업 이름 */
 export const githubItems = sqliteTable("github_items", {
   number: integer("number").primaryKey(), // 이슈 · PR 번호 (GitHub 에서 서로 겹치지 않음)

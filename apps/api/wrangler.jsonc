@@ -17,6 +17,8 @@
       "migrations_dir": "drizzle/migrations"
     }
   ],
+  // 배포 버전 id — 읽기 캐시(api_cache) 키에 넣음 · 새 코드를 배포하면 예전 응답을 안 씀 (작업 0083)
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "triggers": {
     // 환율: 수출입은행 영업일 11시 전후 갱신 → 평일 12:00 KST (03:00 UTC)
     // 물가: 세계은행 연 단위 자료 → 매달 1일 13:00 KST (04:00 UTC)

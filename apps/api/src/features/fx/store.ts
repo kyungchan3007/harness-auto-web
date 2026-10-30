@@ -1,6 +1,7 @@
 // D1 저장 — collect.ts 의 RateStore 구현
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
+import { clearApiCache } from "../../db/cache";
 import { runLog } from "../../db/runs";
 import { fxRates } from "../../db/schema";
 import type { RateStore } from "./collect";
@@ -31,6 +32,7 @@ export function d1RateStore(d1: D1Database): RateStore {
             })
           : q.onConflictDoNothing());
       }
+      if (rows.length > 0) await clearApiCache(d1); // 새 환율 → 저장해 둔 응답은 낡음
       return rows.length;
     },
   };
