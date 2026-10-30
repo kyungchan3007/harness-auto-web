@@ -10,6 +10,8 @@ export type JournalEntry = {
   what: string | null;
   /** 허점 — "없음" 은 뺌 */
   gaps: string[];
+  /** 애매한 곳 — 질문과 답 "(확인됨: …)" · 스스로 정한 것 "(가정)" (LOG-02 · 작업 0103) */
+  assumptions: string[];
 };
 
 /** 이메일 · 토큰 모양 글자를 가림 — 원문에 실수로 붙여 넣은 것이 있어도 공개 페이지에 나가지 않게 */
@@ -50,14 +52,16 @@ export function sectionBullets(md: string, heading: RegExp): string[] {
 const plain = (s: string) => s.replace(/\*\*|`/g, "");
 
 /** 작업 폴더 하나의 파일들 → 일지 항목 · 요청 원문이 없으면 null */
-export function entryOf(dir: string, files: { request?: string; plan?: string; trace?: string }): JournalEntry | null {
+export function entryOf(dir: string, files: { request?: string; plan?: string; prd?: string; trace?: string }): JournalEntry | null {
   const m = dir.match(/^(\d{4})-(.+)$/);
   if (!m || !files.request) return null;
   const request = parseRequest(files.request);
   if (request === "") return null;
   const what = files.plan ? (sectionBullets(files.plan, /무엇을/)[0] ?? null) : null;
   const gaps = [...(files.plan ? sectionBullets(files.plan, /허점/) : []), ...(files.trace ? sectionBullets(files.trace, /허점/) : [])];
-  return { task: m[1], slug: m[2], request, what: what && plain(what), gaps: gaps.map(plain) };
+  // 애매한 곳 — Quick 은 plan.md · Full 은 prd.md 에 적기도 함
+  const assumptions = [...(files.plan ? sectionBullets(files.plan, /애매한 곳/) : []), ...(files.prd ? sectionBullets(files.prd, /애매한 곳/) : [])];
+  return { task: m[1], slug: m[2], request, what: what && plain(what), gaps: gaps.map(plain), assumptions: assumptions.map(plain) };
 }
 
 /** 최근 작업부터 */

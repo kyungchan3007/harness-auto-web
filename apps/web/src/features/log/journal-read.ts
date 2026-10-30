@@ -13,7 +13,7 @@ export function readJournal(): JournalEntry[] {
   if (!root) return [];
   return readdirSync(root, { withFileTypes: true })
     .filter((d) => d.isDirectory() && /^\d{4}-/.test(d.name))
-    .map((d) => entryOf(d.name, { request: read(join(root, d.name, "request.md")), plan: read(join(root, d.name, "plan.md")), trace: read(join(root, d.name, "trace.md")) }))
+    .map((d) => entryOf(d.name, { request: read(join(root, d.name, "request.md")), plan: read(join(root, d.name, "plan.md")), prd: read(join(root, d.name, "prd.md")), trace: read(join(root, d.name, "trace.md")) }))
     .filter((e): e is JournalEntry => e !== null)
     .sort(newestFirst);
 }

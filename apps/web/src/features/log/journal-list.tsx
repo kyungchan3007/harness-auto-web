@@ -75,7 +75,7 @@ function Entry({ entry: e, title, pr, open }: { entry: JournalEntry; title: stri
           <span className="font-mono text-xs text-fg-2">{e.task}</span>
           <span className="min-w-0 flex-1 font-semibold">{title}</span>
           <span className="text-xs text-fg-2">
-            {pr ? `${date.format(new Date(pr.mergedAt))} 머지` : "머지 전"}
+            {pr ? `${date.format(new Date(pr.mergedAt))} 머지` : "머지 기록 아직 없음"}
             {e.gaps.length > 0 && <span className="ml-2 text-expensive">허점 {e.gaps.length}</span>}
           </span>
         </summary>
@@ -84,6 +84,19 @@ function Entry({ entry: e, title, pr, open }: { entry: JournalEntry; title: stri
             <p className="text-xs font-semibold text-fg-2">요청 원문</p>
             <blockquote className="mt-2 border-l-2 border-accent/60 pl-4 leading-relaxed whitespace-pre-wrap break-words text-fg">{e.request.replace(/^## /gm, "▸ ")}</blockquote>
           </div>
+          {e.assumptions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-fg-2">애매한 곳 — 물어서 정한 것 (확인됨) · 스스로 정한 것 (가정)</p>
+              <ul className="mt-2 grid gap-1.5 leading-relaxed">
+                {e.assumptions.map((a) => (
+                  <li key={a} className="flex gap-2">
+                    <span aria-hidden className={`mt-2 inline-block size-1.5 shrink-0 rounded-full ${/확인됨/.test(a) ? "bg-cheap" : "bg-normal"}`} />
+                    <span className="break-words">{a}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {e.gaps.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-fg-2">허점 — 이번에 드러난 실수 · 구멍</p>
