@@ -55,4 +55,11 @@ describe("사이트 상태 (작업 0105)", () => {
     expect(s.lastRun?.at).toBe("2026-10-30T06:00:10Z");
     expect(s.schedule.map((x) => x.state)).toEqual(["missed", "missed", "done"]);
   });
+
+  it("예비 메우기(15:09)는 15:00 회차로 치지 않음 — 회차는 그대로 missed · 마지막 수집엔 보임 (작업 0107)", () => {
+    const runs = [run("2026-10-30T06:09:52Z"), run("2026-10-29T03:00:30Z")];
+    const s = siteStatus({ now: new Date("2026-10-30T06:12:00Z"), latestDate: "2026-10-30", runs, slots: SLOTS, firstRateAt: "2026-10-30T06:09:55Z" });
+    expect(s.schedule.map((x) => x.state)).toEqual(["missed", "missed", "missed"]);
+    expect(s.lastRun?.at).toBe("2026-10-30T06:09:52Z");
+  });
 });

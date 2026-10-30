@@ -6,6 +6,7 @@ export type RunRow = { startedAt: string; source: string; status: "running" | "o
 export type Slot = { cron: string; kind: "collect" | "retry" };
 
 const KST = 9 * 3600_000;
+export const SLOT_WINDOW_MS = 5 * 60_000;
 const kst = (d: Date) => new Date(d.getTime() + KST);
 const kstDay = (iso: string) => kst(new Date(iso)).toISOString().slice(0, 10);
 
@@ -26,7 +27,7 @@ function slotTime(cron: string): string {
 
 /**
  * 오늘 예약 회차 상태
- * - 회차 시각부터 20분 안에 시작한 수집 기록 → 그 결과
+ * - 회차 시각부터 5분 안에 시작한 수집 기록 → 그 결과 (예약은 30초 안에 시작 · 20분으로 두니 15:09 예비 메우기(ensure-fx)가 15:00 회차로 잡혔음 · 작업 0107)
  * - 기록이 없고 다시 하는 회차인데 그 전에 오늘 값이 있었으면 → not-needed (다시 하는 예약은 값이 있으면 기록 없이 끝남)
  * - 그 밖에 시각이 5분 넘게 지났으면 missed · 아니면 upcoming
  */
@@ -40,7 +41,7 @@ export function scheduleOf(slots: Slot[], runs: RunRow[], now: Date, firstRateAt
     const at = Date.parse(`${today}T${time}:00+09:00`);
     const run = runs.find((r) => {
       const t = Date.parse(r.startedAt);
-      return t >= at && t < at + 20 * 60_000;
+      return t >= at && t < at + SLOT_WINDOW_MS;
     });
     let state: SlotState;
     if (run) state = run.status === "ok" || run.status === "running" ? "done" : run.status;
