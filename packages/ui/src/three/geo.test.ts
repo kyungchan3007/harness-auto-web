@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Place, angleBetween, arcPoints, faceRotationY, midpoint, toVec3 } from "./geo";
+import { GLOBE_CAMERA_Z, GLOBE_FIT_RADIUS, type Place, angleBetween, arcPoints, faceRotationY, fitDistance, midpoint, toVec3 } from "./geo";
 
 // 홈이 실제로 쓰는 곳과 같은 값 (apps/web/src/features/home/places.ts)
 const SEOUL: Place = { id: "seoul", name: "서울", lat: 37.57, lng: 126.98 };
@@ -81,5 +81,21 @@ describe("처음 방향", () => {
     expect(rx).toBeCloseTo(0);
     expect(rz).toBeGreaterThan(0);
     expect(y).toBeGreaterThan(0);
+  });
+});
+
+describe("fitDistance — 지구가 칸 안에 다 들어오는 카메라 거리 (작업 0085)", () => {
+  const fits = (fov: number, aspect: number) => {
+    const d = fitDistance(fov, aspect);
+    const v = (fov * Math.PI) / 360;
+    const h = Math.atan(Math.tan(v) * aspect);
+    return Math.asin(GLOBE_FIT_RADIUS / d) <= Math.min(v, h) + 1e-9;
+  };
+  it("넓은 칸은 기본 거리 그대로", () => {
+    expect(fitDistance(42, 1.6)).toBe(GLOBE_CAMERA_Z);
+  });
+  it("좁은(세로로 긴) 칸은 멀리 물려서 양옆이 안 잘림", () => {
+    expect(fitDistance(42, 0.6)).toBeGreaterThan(GLOBE_CAMERA_Z);
+    for (const a of [0.3, 0.5, 0.6, 0.8, 1, 1.6, 2.5]) expect(fits(42, a), String(a)).toBe(true);
   });
 });

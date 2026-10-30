@@ -1,21 +1,53 @@
 "use client";
 
-// 🌏 지구본 — 어두운 구 · 위경도선 · 오로라 테두리 빛 · 출발지 → 도착지 호 (색 = 받은 tone) · 출발지 주변에서 천천히 오감
+// 🌏 지구본 — 실제 지구 사진(texture · 작업 0085) 또는 어두운 구 + 위경도선 · 오로라 테두리 빛 · 출발지 → 도착지 호 (색 = 받은 tone) · 출발지 주변에서 천천히 오감
 // 어디를 그릴지 · 무슨 색인지는 쓰는 쪽이 정함 (디자인 시스템은 사이트 데이터를 모름)
 // focus 를 주면 출발지 ~ 그 도착지 가운데가 앞으로 오게 부드럽게 돌고 그 호만 굵게 (홈 "여행지 고르기" 장면 · 작업 0070)
 import { Line } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import { AdditiveBlending, BackSide, type Group, type Mesh } from "three";
-import { type Place, type Vec3, arcPoints, faceRotationY, midpoint, toVec3 } from "./geo";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AdditiveBlending, BackSide, type Group, type Mesh, type PerspectiveCamera, SRGBColorSpace, type Texture, TextureLoader } from "three";
+import { type Place, type Vec3, arcPoints, faceRotationY, fitDistance, midpoint, toVec3, GLOBE_CAMERA_Z } from "./geo";
 import { Stage, type Tone, tokenColor, toneColor } from "./stage";
 
 export type GlobeArc = { to: Place; tone: Tone | null };
-export type GlobeProps = { origin: Place; arcs: GlobeArc[]; focus?: Place | null; className?: string };
+/** texture = 등장방형(가로 = 경도 -180 → 180 · 세로 = 위도 90 → -90) 지구 사진 주소 — 사이트가 정함 (디자인 시스템은 파일 위치를 모름) */
+export type GlobeProps = { origin: Place; arcs: GlobeArc[]; focus?: Place | null; texture?: string; className?: string };
+
+/** 사진을 받는 동안 · 못 받으면 어두운 구 + 위경도선 그대로 */
+function useEarthTexture(url?: string) {
+  const [map, setMap] = useState<Texture | null>(null);
+  useEffect(() => {
+    if (!url) return;
+    let alive = true;
+    let got: Texture | null = null;
+    new TextureLoader().load(url, (t) => {
+      t.colorSpace = SRGBColorSpace;
+      t.anisotropy = 4;
+      got = t;
+      if (alive) setMap(t);
+      else t.dispose();
+    });
+    return () => {
+      alive = false;
+      got?.dispose();
+    };
+  }, [url]);
+  return map;
+}
 
 /** 각도 a → b 로 가장 짧게 도는 차이 (-π ~ π) */
 const turn = (a: number, b: number) => ((((b - a + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
 const TILT = 0.35;
+function FitCamera() {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    const cam = camera as PerspectiveCamera;
+    cam.position.set(0, 0, fitDistance(cam.fov, size.width / size.height));
+    cam.updateProjectionMatrix();
+  }, [camera, size.width, size.height]);
+  return null;
+}
 
 /** 테두리가 빛나는 대기 — 카메라를 향한 면일수록 투명 (fresnel) · 오로라 청록 → 보라 */
 const atmosphere = {
@@ -67,7 +99,8 @@ function Arc({ from, to, color, animate, offset, emphasis }: { from: Place; to: 
   );
 }
 
-function Earth({ origin, arcs, focus, animate }: { origin: Place; arcs: GlobeArc[]; focus: Place | null; animate: boolean }) {
+function Earth({ origin, arcs, focus, animate, texture }: { origin: Place; arcs: GlobeArc[]; focus: Place | null; animate: boolean; texture?: string }) {
+  const map = useEarthTexture(texture);
   const spin = useRef<Group>(null);
   const tilt = useRef<Group>(null);
   // 한국 주변에서만 천천히 오감 (사용자 확인: "한국 주변에서만 오가게 해줘") — 서울이 가장자리로 밀리지 않게 ±0.35 rad · 한 번 오가는 데 약 21초
@@ -95,9 +128,11 @@ function Earth({ origin, arcs, focus, animate }: { origin: Place; arcs: GlobeArc
       <group ref={spin} rotation={[0, base, 0]}>
         <mesh>
           <sphereGeometry args={[1, 64, 64]} />
-          <meshBasicMaterial color="#07080c" />
+          {/* 사진은 조금 어둡게 — 어두운 화면에서 호 · 점이 묻히지 않게 */}
+          {/* key 를 바꿔 재질을 새로 만듦 — 같은 재질에 사진만 나중에 넣으면 셰이더가 다시 안 만들어져 회색만 나옴 */}
+          {map ? <meshBasicMaterial key="photo" map={map} color="#b8c0cc" /> : <meshBasicMaterial key="plain" color="#07080c" />}
         </mesh>
-        <Graticule />
+        {!map && <Graticule />}
         <mesh position={seoul}>
           <sphereGeometry args={[0.02, 16, 16]} />
           <meshBasicMaterial color={tokenColor("--hav-accent", "#4ff0e0")} />
@@ -123,10 +158,15 @@ function Earth({ origin, arcs, focus, animate }: { origin: Place; arcs: GlobeArc
   );
 }
 
-export default function Globe({ origin, arcs, focus = null, className = "" }: GlobeProps) {
+export default function Globe({ origin, arcs, focus = null, texture, className = "" }: GlobeProps) {
   return (
-    <Stage className={className} camera={{ position: [0, 0, 4.2], fov: 42 }}>
-      {(animate) => <Earth origin={origin} arcs={arcs} focus={focus} animate={animate} />}
+    <Stage className={className} camera={{ position: [0, 0, GLOBE_CAMERA_Z], fov: 42 }}>
+      {(animate) => (
+        <>
+          <FitCamera />
+          <Earth origin={origin} arcs={arcs} focus={focus} animate={animate} texture={texture} />
+        </>
+      )}
     </Stage>
   );
 }

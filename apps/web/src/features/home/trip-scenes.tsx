@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CurrencyFlag } from "@/shared/currency-flag";
 import { GlobeLazy } from "@/shared/three-lazy";
+import { EARTH_TEXTURE } from "./places";
 
 export type TripStop = {
   place: Place & { country: string };
@@ -45,6 +46,7 @@ export function TripScenes({ origin, stops }: { origin: Place; stops: TripStop[]
         <GlobeLazy
           className="h-full w-full"
           origin={origin}
+          texture={EARTH_TEXTURE}
           focus={stops[active]?.place ?? null}
           arcs={stops.map((s) => ({ to: s.place, tone: s.signal }))}
         />
