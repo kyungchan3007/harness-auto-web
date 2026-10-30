@@ -35,6 +35,12 @@ export function d1RateStore(d1: D1Database): RateStore {
       if (rows.length > 0) await clearApiCache(d1); // 새 환율 → 저장해 둔 응답은 낡음
       return rows.length;
     },
+    async officialCurrencies() {
+      // 최근 30일 — 기본 키 앞부분(날짜)으로 그 기간만 읽음 (예비로 넘어간 날에만 부름)
+      const since = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
+      const rows = await db.selectDistinct({ currency: fxRates.currency }).from(fxRates).where(and(gte(fxRates.date, since), eq(fxRates.source, "koreaexim")));
+      return rows.map((r) => r.currency);
+    },
   };
 }
 
