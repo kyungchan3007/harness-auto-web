@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/shared/site";
 import { outageActive } from "@/shared/outage";
 import { OutageNotice } from "@/shared/outage-notice";
@@ -11,7 +11,12 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   openGraph: { siteName: SITE_NAME, locale: "ko_KR", type: "website" },
   twitter: { card: "summary_large_image" },
+  // 홈 화면에 추가했을 때 iOS 위 막대 · 이름 (작업 0091 · 아이콘은 app/apple-icon.png)
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "black-translucent" },
 };
+
+// 휴대폰 주소창 색 — 사이트 바탕(검정)과 같게
+export const viewport: Viewport = { themeColor: "#000000" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
