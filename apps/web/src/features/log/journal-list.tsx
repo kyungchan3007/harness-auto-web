@@ -2,7 +2,7 @@
 //   빌드 때 만든 HTML 에 다 들어감 (자바스크립트 없이 열고 닫음 · details)
 import type { DoneTask } from "@hav/shared/tasks";
 import type { JournalEntry } from "./journal";
-import { REPO_URL } from "./task-desks";
+import { REPO_URL } from "@/shared/site";
 
 const FIRST = 15;
 
@@ -55,7 +55,7 @@ export function JournalList({ entries, names, done }: Props) {
             )}
             <p className="mt-8 text-xs text-fg-2">
               원본: 저장소의{" "}
-              <a href={`${REPO_URL}/tree/main/.agents/specs`} className="text-accent hover:underline">
+              <a href={`${REPO_URL}/tree/main/.agents/specs`} className="text-accent underline underline-offset-2 hover:decoration-2">
                 .agents/specs
               </a>{" "}
               (작업마다 request.md · plan.md)

@@ -5,13 +5,13 @@
 import type { TasksSummary } from "@hav/shared/tasks";
 import { Section } from "@hav/ui/section";
 import type { Fetched } from "../../shared/api";
+import { REPO_URL } from "../../shared/site";
 import { StationsLazy } from "../../shared/three-lazy";
 import { MOOD_TEXT, moodOf } from "./mood";
 import { STAGES, deskState } from "./stage";
 import { liveStatus } from "./status";
 import type { Activity } from "./use-activity";
 
-export const REPO_URL = "https://github.com/kyungchan3007/harness-auto-web";
 const SHELF = 30;
 
 export function TaskDesks({ activity, tasks }: { activity: Activity; tasks: Fetched<TasksSummary> }) {

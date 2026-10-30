@@ -66,7 +66,8 @@ export function TripScenes({ origin, stops }: { origin: Place; stops: TripStop[]
               aria-current={i === active ? "step" : undefined}
               className="flex min-h-[70svh] items-end py-10 lg:min-h-[85svh] lg:items-center"
             >
-              <div className={`w-full rounded-card bg-surface/80 p-6 backdrop-blur-md transition-opacity duration-500 sm:p-8 ${i === active ? "opacity-100" : "opacity-40"}`}>
+              {/* 지금 도시만 테두리 빛 · 나머지는 조금 작게 — 글자를 흐리게 하면 대비 기준(4.5:1) 미달이라 투명도는 안 씀 (작업 0092) */}
+              <div className={`w-full rounded-card bg-surface/80 p-6 backdrop-blur-md transition duration-500 sm:p-8 ${i === active ? "ring-1 ring-accent/50" : "scale-[0.97] ring-1 ring-line"}`}>
                 <p className="flex items-center gap-2 text-sm text-fg-2">
                   <CurrencyFlag currency={code} />
                   {s.place.name} · {country?.name ?? s.place.country}

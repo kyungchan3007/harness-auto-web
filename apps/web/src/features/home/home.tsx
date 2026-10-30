@@ -194,7 +194,7 @@ export function Home({ latest, signals, levels, heroHistory }: HomeData) {
           <p>신호는 최근 {windowDays}일 중 오늘 값의 위치입니다. 앞으로를 예측하지 않으며, 투자 · 금융 조언이 아닙니다.</p>
           <p>
             환율: 한국수출입은행 (예비: Frankfurter) · 화면에 보이는 값은 사이트를 만든 시점의 자료입니다 ·{" "}
-            <a href="/log" className="text-accent hover:underline">
+            <a href="/log" className="text-accent underline underline-offset-2 hover:decoration-2">
               🚧 이 사이트는 AI 코딩 에이전트가 만들고 있습니다
             </a>
           </p>
