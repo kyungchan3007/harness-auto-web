@@ -94,6 +94,23 @@ describe("collectDay", () => {
     expect(saved).toEqual([]);
   });
 
+  it("예비는 공식 출처가 주던 통화만 채움 — 목록이 하루만 160개로 늘지 않게 (작업 0098)", async () => {
+    const { store, saved } = memoryStore();
+    store.officialCurrencies = async () => ["USD"];
+    const frank = [...FRANK_OK, { date: "2026-10-28", base: "KRW", quote: "XAU", rate: 0.0000001 }, { date: "2026-10-28", base: "KRW", quote: "ZAR", rate: 0.013 }];
+    const r = await collectDay(store, "2026-10-28", { fetcher: fetcher(() => json({}, 500), () => json(frank)), now: NOW });
+    expect(r.status).toBe("ok");
+    expect(saved.map((x) => x.currency)).toEqual(["USD"]);
+  });
+
+  it("처음 수집(공식 출처 기록 없음)이면 예비를 거르지 않음", async () => {
+    const { store, saved } = memoryStore();
+    store.officialCurrencies = async () => [];
+    const frank = [...FRANK_OK, { date: "2026-10-28", base: "KRW", quote: "ZAR", rate: 0.013 }];
+    await collectDay(store, "2026-10-28", { fetcher: fetcher(() => json({}, 500), () => json(frank)), now: NOW });
+    expect(saved.map((x) => x.currency).sort()).toEqual(["USD", "ZAR"]);
+  });
+
   it("둘 다 실패 → error 로 기록 (숨기지 않음)", async () => {
     const { store, runs } = memoryStore();
     const r = await collectDay(store, "2026-10-28", { now: NOW, fetcher: fetcher(() => json("x", 500), () => json("x", 503)) });
