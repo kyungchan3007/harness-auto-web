@@ -1,4 +1,4 @@
-// 오른쪽 상세 — 오늘 환율 · 신호 · 환율 계산기(작업 0086) · 1년 흐름 · 최저 · 최고 · 환산 예시 (빌드 때 받은 값만 · 없으면 이유)
+// 오른쪽 상세 — 오늘 환율 · 신호 · 환율 계산기(작업 0086) · 기간별 흐름(작업 0087) · 최저 · 최고 · 환산 예시 (빌드 때 받은 값만 · 없으면 이유)
 import type { Fetched } from "@/shared/api";
 import { SOURCE_NAME, currencyName, percentileText, rangeOf, rateText, sampleText, toUnit } from "@hav/shared/currency";
 import type { FxHistory, FxRate } from "@hav/shared/fx";
@@ -6,8 +6,8 @@ import type { CurrencySignal } from "@hav/shared/signal";
 import { TRAVEL_COUNTRIES, countriesOf } from "@hav/shared/travel";
 import { SignalBadge } from "@hav/ui/signal-badge";
 import { CurrencyFlag } from "@/shared/currency-flag";
-import { YearChart } from "@/shared/year-chart";
 import { Converter } from "./converter";
+import { PeriodChart } from "./period-chart";
 
 export type DetailData = { code: string; rate: FxRate | null; signal: Fetched<CurrencySignal>; history: Fetched<FxHistory>; problem: string | null };
 
@@ -48,10 +48,7 @@ export function CurrencyDetail({ code, rate, signal, history, problem }: DetailD
       </div>
 
       <div className="mt-10">
-        <p className="mb-3 text-sm font-semibold text-fg">
-          최근 1년 흐름 <span className="font-normal text-fg-2">· 받은 {range?.count ?? 0}일 (주말 · 휴일은 고시 없음)</span>
-        </p>
-        {history.ok ? <YearChart rates={days} unitText={t.unit} /> : <p className="rounded-card border border-line p-6 text-sm text-fg-2">1년 기록을 받지 못했습니다 ({history.reason})</p>}
+        {history.ok ? <PeriodChart rates={days} unitText={t.unit} /> : <p className="rounded-card border border-line p-6 text-sm text-fg-2">1년 기록을 받지 못했습니다 ({history.reason})</p>}
       </div>
 
       <dl className="mt-8 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
